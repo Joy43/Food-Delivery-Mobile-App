@@ -4,4 +4,6 @@ dist/
 .expo/
 ._*
 package-lock.json
+.DS_Store
+.cursor/
 yarn.lock
