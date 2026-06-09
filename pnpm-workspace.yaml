@@ -1,0 +1,9 @@
+packages:
+  - 'project/*'
+  - 'packages/*'
+allowBuilds:
+  '@nestjs/core': true
+  bcrypt: true
+  esbuild: true
+  msgpackr-extract: true
+  unrs-resolver: true
