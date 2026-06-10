@@ -8,7 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
@@ -19,6 +19,7 @@ import { JwtPayload, UserRole } from '@food-delivery/types';
 
 type AuthRequest = ExpressRequest & { user: JwtPayload };
 
+@ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
   constructor(private paymentsService: PaymentsService) {}
@@ -27,6 +28,11 @@ export class PaymentsController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.CUSTOMER)
+  @ApiOperation({ summary: 'Create a Stripe Payment Intent for an order' })
+  @ApiResponse({ status: 201, description: 'Payment Intent created successfully, clientSecret returned' })
+  @ApiResponse({ status: 400, description: 'Order not found, already paid, or invalid input' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   createIntent(
     @Request() req: AuthRequest,
     @Body() dto: CreatePaymentIntentDto,
@@ -36,6 +42,9 @@ export class PaymentsController {
 
   @Post('webhook')
   @HttpCode(200) // Stripe expects 200 — any other status triggers a retry
+  @ApiOperation({ summary: 'Stripe Webhook listener (Public/Stripe usage only)' })
+  @ApiResponse({ status: 200, description: 'Webhook event processed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid stripe signature or payload' })
   handleWebhook(
     @Request() req: RawBodyRequest<ExpressRequest>,
     @Headers('stripe-signature') signature: string,

@@ -1,7 +1,7 @@
 export default {
   expo: {
-    name: 'frontend',
-    slug: 'frontend',
+    name: 'food-delivery',
+    slug: 'food-delivery',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
@@ -29,6 +29,7 @@ export default {
     },
 
     web: {
+      bundler: 'metro',
       output: 'static',
       favicon: './assets/images/favicon.png',
     },

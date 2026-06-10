@@ -7,6 +7,8 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { UserRole } from '@food-delivery/types';
 
+import "@/global.css";
+
 const queryClient = new QueryClient();
 
 function RootNavigator() {

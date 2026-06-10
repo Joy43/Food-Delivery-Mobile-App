@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function DriverLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#208AEF' }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#208AEF', headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{

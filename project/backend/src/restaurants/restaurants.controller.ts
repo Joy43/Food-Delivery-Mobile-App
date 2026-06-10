@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
@@ -22,6 +22,7 @@ import { Request as ExpressRequest } from 'express';
 
 type AuthRequest = ExpressRequest & { user: JwtPayload };
 
+@ApiTags('Restaurants')
 @Controller('restaurants')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT-auth')
@@ -31,6 +32,11 @@ export class RestaurantsController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
+  @ApiOperation({ summary: 'Register a new restaurant profile (Restaurant Owner only)' })
+  @ApiResponse({ status: 201, description: 'Restaurant profile created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   create(@Request() req: AuthRequest, @Body() dto: CreateRestaurantDto) {
     return this.restaurantsService.create(req.user.sub, dto);
   }
@@ -38,17 +44,28 @@ export class RestaurantsController {
   @Get('mine')
   @UseGuards(RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
+  @ApiOperation({ summary: 'Retrieve restaurant details managed by the logged-in owner' })
+  @ApiResponse({ status: 200, description: 'Restaurant details returned successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   findMine(@Request() req: AuthRequest) {
     return this.restaurantsService.findMine(req.user.sub);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Retrieve list of all active/registered restaurants' })
+  @ApiResponse({ status: 200, description: 'List of restaurants returned successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@Query('search') search?: string) {
     // @Query('search') extracts ?search= from the URL — optional
     return this.restaurantsService.findAll(search);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get single restaurant details by UUID' })
+  @ApiResponse({ status: 200, description: 'Restaurant details returned successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Restaurant not found' })
   findOne(@Param('id') id: string) {
     return this.restaurantsService.findById(id);
   }
@@ -56,6 +73,12 @@ export class RestaurantsController {
   @Patch(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
+  @ApiOperation({ summary: 'Update restaurant profile details (Owner only)' })
+  @ApiResponse({ status: 200, description: 'Restaurant updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Restaurant not found' })
   update(
     @Param('id') id: string,
     @Request() req: AuthRequest,
