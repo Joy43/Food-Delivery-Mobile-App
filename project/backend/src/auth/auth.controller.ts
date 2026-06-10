@@ -6,6 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -28,6 +29,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   me(@Request() req: ExpressRequest & { user: JwtPayload }) {
     return req.user;

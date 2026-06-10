@@ -11,6 +11,9 @@ async function bootstrap() {
     rawBody: true,
   });
 
+  app.enableCors();
+  app.setGlobalPrefix('api'); // /api/....
+
   // Configure Swagger documentation setup
   const config = new DocumentBuilder()
     .setTitle('Food Delivery API')
@@ -25,14 +28,12 @@ async function bootstrap() {
         description: 'Enter JWT token',
         in: 'header',
       },
-      'JWT-auth', // This name matches the security requirement name in controller decorators
+      'JWT-auth', 
     )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  app.enableCors();
-  app.setGlobalPrefix('api'); // /api/....
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

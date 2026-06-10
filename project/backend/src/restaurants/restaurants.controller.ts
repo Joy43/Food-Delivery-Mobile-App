@@ -9,6 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
@@ -23,6 +24,7 @@ type AuthRequest = ExpressRequest & { user: JwtPayload };
 
 @Controller('restaurants')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class RestaurantsController {
   constructor(private restaurantsService: RestaurantsService) {}
 

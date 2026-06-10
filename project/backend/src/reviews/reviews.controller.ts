@@ -7,6 +7,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -19,6 +20,7 @@ type AuthRequest = ExpressRequest & { user: JwtPayload };
 
 @Controller('reviews')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class ReviewsController {
   constructor(private reviewsService: ReviewsService) {}
 

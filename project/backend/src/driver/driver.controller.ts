@@ -7,6 +7,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express';
 import { DriverService } from './driver.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,6 +20,7 @@ type AuthRequest = ExpressRequest & { user: JwtPayload };
 @Controller('driver')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.DRIVER)
+@ApiBearerAuth('JWT-auth')
 export class DriverController {
   constructor(private driverService: DriverService) {}
 

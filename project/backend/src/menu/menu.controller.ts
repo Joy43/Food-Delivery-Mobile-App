@@ -9,6 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Request as ExpressRequest } from 'express';
 import { MenuService } from './menu.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -29,6 +30,7 @@ export class MenuController {
   // CATEGORIES
 
   @Post('categories')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   createCategory(@Request() req: AuthRequest, @Body() dto: CreateCategoryDto) {
@@ -41,6 +43,7 @@ export class MenuController {
   }
 
   @Patch('categories/:id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   updateCategory(
@@ -52,6 +55,7 @@ export class MenuController {
   }
 
   @Delete('categories/:id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   deleteCategory(@Param('id') id: string, @Request() req: AuthRequest) {
@@ -61,6 +65,7 @@ export class MenuController {
   // MENU ITEMS
 
   @Post('items')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   createItem(@Request() req: AuthRequest, @Body() dto: CreateMenuItemDto) {
@@ -73,6 +78,7 @@ export class MenuController {
   }
 
   @Patch('items/:id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   updateItem(
@@ -84,6 +90,7 @@ export class MenuController {
   }
 
   @Delete('items/:id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.RESTAURANT_OWNER)
   deleteItem(@Param('id') id: string, @Request() req: AuthRequest) {

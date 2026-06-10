@@ -1,36 +1,59 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
 import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function CustomerLayout() {
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="(home)">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
-      </NativeTabs.Trigger>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#208AEF' }}>
+      <Tabs.Screen
+        name="(home)"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="home" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="search">
-        <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="search" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="cart">
-        <NativeTabs.Trigger.Label>Cart</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="bag.fill" md="shopping_cart" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="cart"
+        options={{
+          title: 'Cart',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="shopping-cart" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="orders">
-        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="shippingbox.fill" md="local_shipping" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="local-shipping" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="person.crop.circle.fill"
-          md="account_circle"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="account-circle" size={24} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }

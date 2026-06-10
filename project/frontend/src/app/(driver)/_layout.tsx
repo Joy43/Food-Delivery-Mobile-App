@@ -1,31 +1,49 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
 import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function DriverLayout() {
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
-      </NativeTabs.Trigger>
+    <Tabs screenOptions={{ tabBarActiveTintColor: '#208AEF' }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="home" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="active">
-        <NativeTabs.Trigger.Label>Active</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="car.fill" md="local_shipping" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="active"
+        options={{
+          title: 'Active',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="local-shipping" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="history">
-        <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="clock.fill" md="history" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="history" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="person.crop.circle.fill"
-          md="account_circle"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="account-circle" size={24} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }

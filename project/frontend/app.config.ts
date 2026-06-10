@@ -7,10 +7,13 @@ export default {
     icon: './assets/images/icon.png',
     scheme: 'mobile',
     userInterfaceStyle: 'automatic',
+
     ios: {
-      icon: './assets/expo.icon',
+      supportsTablet: true,
     },
+
     android: {
+      package: 'com.ssjoy43.frontend',
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
         foregroundImage: './assets/images/android-icon-foreground.png',
@@ -20,17 +23,20 @@ export default {
       predictiveBackGestureEnabled: false,
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_API_KEY,
+          apiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
         },
       },
     },
+
     web: {
       output: 'static',
       favicon: './assets/images/favicon.png',
     },
+
     plugins: [
       'expo-router',
       'expo-secure-store',
+
       [
         'expo-splash-screen',
         {
@@ -41,13 +47,14 @@ export default {
           },
         },
       ],
+
       [
         '@stripe/stripe-react-native',
         {
           merchantIdentifier: 'merchant.com.fooddelivery.mobile',
-          enableGooglePay: false,
         },
       ],
+
       [
         'expo-location',
         {
@@ -58,9 +65,10 @@ export default {
         },
       ],
     ],
+
     experiments: {
       typedRoutes: true,
-      reactCompiler: true,
+      reactCompiler: false,
     },
   },
 };
