@@ -8,37 +8,45 @@ import { AuthProvider, useAuth } from '@/context/auth-context';
 import { UserRole } from '@food-delivery/types';
 
 import "@/global.css";
+import { cssInterop } from 'react-native-css-interop';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+cssInterop(Ionicons, {
+  className: {
+    target: 'style',
+    nativeStyleToProp: {
+      color: true,
+      fontSize: 'size',
+    },
+  },
+});
+
+cssInterop(MaterialIcons, {
+  className: {
+    target: 'style',
+    nativeStyleToProp: {
+      color: true,
+      fontSize: 'size',
+    },
+  },
+});
 
 const queryClient = new QueryClient();
 
 function RootNavigator() {
   const { user, isLoading } = useAuth();
-
   if (isLoading) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="health" />
-
-      <Stack.Protected guard={!user}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!!user && user.role === UserRole.CUSTOMER}>
-        <Stack.Screen name="(customer)" />
-      </Stack.Protected>
-
-      <Stack.Protected
-        guard={!!user && user.role === UserRole.RESTAURANT_OWNER}
-      >
-        <Stack.Screen name="(owner)" />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!!user && user.role === UserRole.DRIVER}>
-        <Stack.Screen name="(driver)" />
-      </Stack.Protected>
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="(customer)" />
+      <Stack.Screen name="(owner)" />
+      <Stack.Screen name="(driver)" />
     </Stack>
   );
 }

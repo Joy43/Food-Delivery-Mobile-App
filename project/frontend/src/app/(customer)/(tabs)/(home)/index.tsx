@@ -4,7 +4,6 @@ import {
   FlatList,
   Image,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -15,10 +14,13 @@ import { router } from 'expo-router';
 import { api } from '@/lib/axios';
 import { RestaurantType } from '@food-delivery/types';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useColorScheme } from 'nativewind';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerHomeScreen() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400); // wait 400ms after user stops typing
+  const { colorScheme, toggleColorScheme } = useColorScheme();
 
   const { data: restaurants = [], isLoading } = useQuery<RestaurantType[]>({
     queryKey: ['restaurants', debouncedSearch],
@@ -31,34 +33,45 @@ export default function CustomerHomeScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.heading}>What are you craving?</Text>
+    <SafeAreaView className="flex-1 bg-bgApp" edges={['top']}>
+      {/* Top Bar */}
+      <View className="flex-row justify-between items-center px-4 pt-2 pb-2">
+        <Pressable className="p-2 bg-bgInput rounded-full">
+          <Ionicons name="notifications-outline" size={24} className="text-textMain" />
+        </Pressable>
+        <Pressable className="p-2 bg-bgInput rounded-full" onPress={toggleColorScheme}>
+          <Ionicons name={colorScheme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={24} className="text-textMain" />
+        </Pressable>
+      </View>
+
+      <Text className="text-headline-md text-textMain px-4 pt-2 mb-3">What are you craving?</Text>
 
       <TextInput
-        style={styles.searchInput}
+        className="mx-4 mb-4 border border-borderInput rounded-xl p-3 text-base bg-bgInput text-textMain font-rubik"
         placeholder="Search restaurants or cuisine..."
+        placeholderTextColor={colorScheme === 'dark' ? '#e4beb4' : '#5b4039'}
         value={search}
         onChangeText={setSearch}
         clearButtonMode="while-editing"
       />
 
       {isLoading ? (
-        <View style={styles.centered}>
+        <View className="flex-1 items-center justify-center pt-12">
           <ActivityIndicator size="large" color="#FF6B35" />
         </View>
       ) : (
         <FlatList
           data={restaurants}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           ListEmptyComponent={
-            <View style={styles.centered}>
-              <Text style={styles.emptyText}>No restaurants found</Text>
+            <View className="flex-1 items-center justify-center pt-12">
+              <Text className="text-base text-textMuted">No restaurants found</Text>
             </View>
           }
           renderItem={({ item }) => (
             <Pressable
-              style={styles.card}
+              className="rounded-xl bg-surface mb-4 shadow-sm overflow-hidden border border-borderInput"
               onPress={() =>
                 router.push(`/(customer)/(tabs)/(home)/restaurant/${item.id}`)
               }
@@ -66,27 +79,27 @@ export default function CustomerHomeScreen() {
               {item.imageUrl ? (
                 <Image
                   source={{ uri: item.imageUrl }}
-                  style={styles.cardImage}
+                  className="w-full h-40"
                 />
               ) : (
-                <View style={styles.cardImagePlaceholder} />
+                <View className="w-full h-40 bg-bgInput" />
               )}
-              <View style={styles.cardBody}>
-                <Text style={styles.cardName}>{item.name}</Text>
-                <Text style={styles.cardCuisine}>{item.cuisineType}</Text>
-                <View style={styles.cardMeta}>
+              <View className="p-3">
+                <Text className="text-title-lg text-textMain mb-1">{item.name}</Text>
+                <Text className="text-body-sm text-textMuted mb-2">{item.cuisineType}</Text>
+                <View className="flex-row items-center justify-between">
                   {Number(item.rating) > 0 ? (
-                    <View style={styles.ratingBadge}>
-                      <Text style={styles.ratingStar}>★</Text>
-                      <Text style={styles.ratingValue}>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="text-sm text-brandDark">★</Text>
+                      <Text className="text-sm font-semibold text-textMain">
                         {Number(item.rating).toFixed(1)}
                       </Text>
                     </View>
                   ) : (
-                    <Text style={styles.noRating}>New</Text>
+                    <Text className="text-sm text-textMuted italic">New</Text>
                   )}
-                  <View style={styles.openBadge}>
-                    <Text style={styles.openBadgeText}>Open</Text>
+                  <View className="bg-success/20 px-2 py-1 rounded-md">
+                    <Text className="text-xs text-success font-semibold">Open</Text>
                   </View>
                 </View>
               </View>
@@ -97,113 +110,3 @@ export default function CustomerHomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: '700',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    marginBottom: 12,
-  },
-  searchInput: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 15,
-    backgroundColor: '#f9f9f9',
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 48,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
-  },
-  card: {
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-    overflow: 'hidden',
-  },
-  cardImage: {
-    width: '100%',
-    height: 160,
-  },
-  cardImagePlaceholder: {
-    width: '100%',
-    height: 160,
-    backgroundColor: '#f0f0f0',
-  },
-  cardBody: {
-    padding: 12,
-  },
-  cardName: {
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  cardCuisine: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 8,
-  },
-  cardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  cardRating: {
-    fontSize: 13,
-    color: '#333',
-  },
-  openBadge: {
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  openBadgeText: {
-    fontSize: 12,
-    color: '#16A34A',
-    fontWeight: '600',
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  ratingStar: {
-    fontSize: 13,
-    color: '#FF6B35',
-  },
-  ratingValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#333',
-  },
-  noRating: {
-    fontSize: 13,
-    color: '#999',
-    fontStyle: 'italic',
-  },
-});

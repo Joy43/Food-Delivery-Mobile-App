@@ -4,10 +4,99 @@
 @tailwind utilities;
 :root {
   --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
+    Rubik, ui-sans-serif, system-ui, sans-serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Courier New, monospace;
+  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+
+  /* Global Vibrant Cravings Colors */
+  --color-primary: #b02f00;      /* primary */
+  --color-surface: #fff8f6;      /* surface */
+  --color-gold: #E8B923;         /* gold */
+  --color-muted: #5b4039;        /* on-surface-variant */
+  --color-success: #10B981;      /* success */
+  --color-danger: #ba1a1a;       /* error */
+  --color-neutral: #5f5e5e;      /* secondary */
+
+  /* UI Element Variables (Light Mode / Default) */
+  --bg-app: #fff8f6;             /* background */
+  --bg-input: #ffe9e4;           /* surface-container */
+  --border-input: #e4beb4;       /* outline-variant */
+  --text-main: #271813;          /* on-surface */
+  --text-muted: #5b4039;         /* on-surface-variant */
+  --brand-color: #ff5722;        /* primary-container (Crave Orange) */
+  --brand-color-light: #ffb5a0;  /* inverse-primary */
+  --brand-color-dark: #b02f00;   /* primary */
+}
+
+/* For this warm custom theme, we maintain high visibility with custom dark mode values derived from the palette */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-app: #271813;           /* on-surface (dark background) */
+    --bg-input: #3e2c27;         /* inverse-surface */
+    --border-input: #5b4039;     /* on-surface-variant */
+    --text-main: #ffede8;        /* inverse-on-surface */
+    --text-muted: #e4beb4;       /* outline-variant */
+    --brand-color: #ff5722;      /* Crave Orange */
+    --brand-color-light: #ffb5a0;
+    --brand-color-dark: #b02f00;
+  }
+}
+
+.dark {
+  --bg-app: #271813;
+  --bg-input: #3e2c27;
+  --border-input: #5b4039;
+  --text-main: #ffede8;
+  --text-muted: #e4beb4;
+  --brand-color: #ff5722;
+  --brand-color-light: #ffb5a0;
+  --brand-color-dark: #b02f00;
+}
+
+@layer utilities {
+  .text-display-lg {
+    font-family: 'Rubik';
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+  }
+  .text-headline-md {
+    font-family: 'Rubik';
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+  }
+  .text-headline-sm {
+    font-family: 'Rubik';
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+  }
+  .text-title-lg {
+    font-family: 'Rubik';
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 24px;
+  }
+  .text-body-md {
+    font-family: 'Rubik';
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+  }
+  .text-body-sm {
+    font-family: 'Rubik';
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+  .text-label-md {
+    font-family: 'Rubik';
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+  }
 }

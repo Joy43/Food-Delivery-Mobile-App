@@ -49,9 +49,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function register(data: RegisterData) {
-    const res = await api.post('/auth/register', data);
-    await saveToken(res.data.token);
-    setUser(res.data.user);
+    await api.post('/auth/register', data);
+    // User wants to redirect to login after register, so we don't save token or set user here.
   }
 
   async function logout() {

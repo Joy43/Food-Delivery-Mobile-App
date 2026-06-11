@@ -5,9 +5,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:types": "pnpm --filter @food-delivery/types build",
+    "watch:types": "pnpm --filter @food-delivery/types watch",
     "dev:backend": "pnpm --filter backend run start:dev",
     "dev:frontend": "pnpm --filter frontend run dev",
-    "dev": "concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "dev": "pnpm build:types && concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\" \"pnpm watch:types\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
