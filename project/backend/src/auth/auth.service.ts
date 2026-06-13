@@ -38,6 +38,8 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         role: dto.role,
+        avatarUrl: dto.avatarUrl 
+        
       })
       .returning();
 

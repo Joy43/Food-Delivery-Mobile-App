@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomerHomeScreen() {
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 400); // wait 400ms after user stops typing
+  const debouncedSearch = useDebounce(search, 400); 
   const { colorScheme, toggleColorScheme } = useColorScheme();
 
   const { data: restaurants = [], isLoading } = useQuery<RestaurantType[]>({

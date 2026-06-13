@@ -13,6 +13,8 @@ export interface User {
     lastName: string;
     role: UserRole;
     createdAt: Date;
+    updatedAt: Date;
+    avatarUrl: string | null;
 }
 
 export interface HealthCheckResponse {

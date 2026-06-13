@@ -17,6 +17,7 @@ interface RegisterData {
   email: string;
   password: string;
   role: string;
+  avatarUrl?: string;
 }
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function register(data: RegisterData) {
     await api.post('/auth/register', data);
-    // User wants to redirect to login after register, so we don't save token or set user here.
+    await login(data.email, data.password);
   }
 
   async function logout() {

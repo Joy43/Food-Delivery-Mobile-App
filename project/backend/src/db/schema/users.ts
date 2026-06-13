@@ -15,6 +15,7 @@ export const users = pgTable('users', {
   password: text('password').notNull(),
   role: userRoleEnum('role').notNull().default('CUSTOMER'),
   pushToken: text('push_token'),
+  avatarUrl: text('avatar_url'),
   isOnline: boolean('is_online').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

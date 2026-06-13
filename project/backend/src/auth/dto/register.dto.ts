@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { UserRole } from '@food-delivery/types';
 
 export class RegisterDto {
@@ -40,5 +40,15 @@ export class RegisterDto {
   })
   @IsEnum(UserRole)
   role!: UserRole;
+
+  //  --- avaterUrl is optional and can be added later via profile update ---
+  @ApiProperty({
+    description: 'The avatar URL of the user (optional)',
+    example: 'https://example.com/avatar.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string; 
 }
 
