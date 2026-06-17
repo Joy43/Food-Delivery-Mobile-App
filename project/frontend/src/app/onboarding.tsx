@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Image,
-  Pressable,
-  Text,
-  View,
-  Dimensions,
-} from 'react-native';
+import { Image, Pressable, Text, View, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
@@ -15,17 +9,20 @@ const { width } = Dimensions.get('window');
 const SLIDES = [
   {
     title: 'Discover Vibrant Cravings',
-    subtitle: 'Explore the best local restaurants and culinary highlights right at your fingertips.',
+    subtitle:
+      'Explore the best local restaurants and culinary highlights right at your fingertips.',
     image: require('../../assets/images/onboarding_1.png'),
   },
   {
     title: 'Customize Your Order',
-    subtitle: 'Tailor your meals with standard options and add-ons designed to evoke culinary excitement.',
+    subtitle:
+      'Tailor your meals with standard options and add-ons designed to evoke culinary excitement.',
     image: require('../../assets/images/onboarding_2.png'),
   },
   {
     title: 'Fast Delivery to Your Door',
-    subtitle: 'Enjoy your favorite cravings delivered hot and fresh in minutes. Track your order in real-time.',
+    subtitle:
+      'Enjoy your favorite cravings delivered hot and fresh in minutes. Track your order in real-time.',
     image: require('../../assets/images/onboarding_3.png'),
   },
 ];
@@ -53,11 +50,16 @@ export default function OnboardingScreen() {
       {/* Top Header / Skip Button */}
       <View className="flex-row justify-end items-center px-margin-mobile pt-16">
         {activeIndex < SLIDES.length - 1 ? (
-          <Pressable onPress={handleComplete} className="py-2 px-4 rounded-full bg-bgInput active:opacity-80">
-            <Text className="text-sm font-semibold text-textMuted font-rubik">Skip</Text>
+          <Pressable
+            onPress={handleComplete}
+            className="py-2 px-4 rounded-full bg-bgInput active:opacity-80"
+          >
+            <Text className="text-sm font-semibold text-textMuted font-rubik">
+              Skip
+            </Text>
           </Pressable>
         ) : (
-          <View className="h-9" /> 
+          <View className="h-9" />
         )}
       </View>
 

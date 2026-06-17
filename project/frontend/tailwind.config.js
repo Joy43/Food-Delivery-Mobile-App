@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Global variable mapped colors
+        // -----  Global variable mapped colors  ---------
         primary:   'var(--color-primary)',
         surface:   'var(--color-surface)',
         gold:      'var(--color-gold)',
@@ -15,14 +15,27 @@ module.exports = {
         danger:    'var(--color-danger)',
         neutral:   'var(--color-neutral)',
         
-        bgApp:     'var(--bg-app)',
-        bgInput:   'var(--bg-input)',
+        // CamelCase support for existing usage
+        bgApp:       'var(--bg-app)',
+        bgInput:     'var(--bg-input)',
         borderInput: 'var(--border-input)',
-        textMain:  'var(--text-main)',
-        textMuted: 'var(--text-muted)',
-        brand:     'var(--brand-color)',
-        brandLight: 'var(--brand-color-light)',
-        brandDark: 'var(--brand-color-dark)',
+        textMain:    'var(--text-main)',
+        textMuted:   'var(--text-muted)',
+        brand:       'var(--brand-color)',
+        brandLight:  'var(--brand-color-light)',
+        brandDark:   'var(--brand-color-dark)',
+
+        // Kebab-case support for standard Tailwind class syntax and CSS compatibility
+        'bg-app':             'var(--bg-app)',
+        'bg-input':           'var(--bg-input)',
+        'border-input':       'var(--border-input)',
+        'text-main':          'var(--text-main)',
+        'text-muted':         'var(--text-muted)',
+        'brand-color':        'var(--brand-color)',
+        'brand-color-light':  'var(--brand-color-light)',
+        'brand-color-dark':   'var(--brand-color-dark)',
+        'brand-light':        'var(--brand-color-light)',
+        'brand-dark':         'var(--brand-color-dark)',
       },
       borderRadius: {
         sm: '0.25rem',
@@ -43,6 +56,19 @@ module.exports = {
       },
       fontFamily: {
         rubik: ['Rubik', 'ui-rounded', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Rubik', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Courier New', 'monospace'],
+        rounded: ['var(--font-rounded)', 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'Meiryo', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'Times New Roman', 'serif'],
+      },
+      fontSize: {
+        'display-lg': ['32px', { lineHeight: '40px', fontWeight: '700' }],
+        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+        'headline-sm': ['20px', { lineHeight: '28px', fontWeight: '600' }],
+        'title-lg': ['18px', { lineHeight: '24px', fontWeight: '500' }],
+        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+        'body-sm': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        'label-md': ['12px', { lineHeight: '16px', fontWeight: '500', letterSpacing: '0.05em' }],
       },
     },
   },

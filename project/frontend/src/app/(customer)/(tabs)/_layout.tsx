@@ -4,7 +4,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function CustomerLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: '#208AEF', headerShown: false }}>
+    <Tabs
+      screenOptions={{ tabBarActiveTintColor: '#208AEF', headerShown: false }}
+    >
       <Tabs.Screen
         name="(home)"
         options={{

@@ -7,7 +7,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { UserRole } from '@food-delivery/types';
 
-import "@/global.css";
+import '@/global.css';
 import { cssInterop } from 'react-native-css-interop';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 

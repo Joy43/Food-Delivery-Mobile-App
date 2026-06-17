@@ -19,7 +19,11 @@ type UseUploadthingProps = {
 };
 
 type ImageUploaderResult = {
-  openImagePicker: (opts?: { source?: 'library' | 'camera'; onCancel?: () => void; onInsufficientPermissions?: () => void }) => Promise<void>;
+  openImagePicker: (opts?: {
+    source?: 'library' | 'camera';
+    onCancel?: () => void;
+    onInsufficientPermissions?: () => void;
+  }) => Promise<void>;
   isUploading: boolean;
 };
 
@@ -120,7 +124,9 @@ export function useImageUploader(
       );
       props.onClientUploadComplete?.([uploaded]);
     } catch (err) {
-      props.onUploadError?.(err instanceof Error ? err : new Error(String(err)));
+      props.onUploadError?.(
+        err instanceof Error ? err : new Error(String(err)),
+      );
     } finally {
       setIsUploading(false);
     }
@@ -164,7 +170,9 @@ export function useDocumentUploader(
       );
       props.onClientUploadComplete?.([uploaded]);
     } catch (err) {
-      props.onUploadError?.(err instanceof Error ? err : new Error(String(err)));
+      props.onUploadError?.(
+        err instanceof Error ? err : new Error(String(err)),
+      );
     } finally {
       setIsUploading(false);
     }

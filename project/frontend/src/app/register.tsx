@@ -7,11 +7,14 @@ import {
   Text,
   TextInput,
   View,
-  Image,
+  ImageBackground,
+  SafeAreaView,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
   TouchableOpacity,
 } from 'react-native';
 import { useAuth } from '@/context/auth-context';
-import { useTheme } from '@/hooks/use-theme';
 import { router } from 'expo-router';
 import { UserRole } from '@food-delivery/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +27,6 @@ const ROLES = [
 
 export default function RegisterScreen() {
   const { register } = useAuth();
-  const theme = useTheme();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -32,6 +34,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>(UserRole.CUSTOMER);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Focus states
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -57,188 +60,286 @@ export default function RegisterScreen() {
   }
 
   return (
-    <ScrollView 
-      className="bg-bgApp font-rubik"
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 16, paddingTop: 64, paddingBottom: 48 }}
-    >
-      {/* Brand Header */}
-      <View className="items-center mb-8">
-        <Image
-            source={require('../../assets/logo/logo.png')}
-          style={{ width: 64, height: 64, borderRadius: 12 }}
-          className="mb-3"
-        />
-        <Text className="text-headline-md font-bold text-textbrand font-rubik">
-         FoddTaste
-        </Text>
-        <Text className="text-body-sm text-textMuted font-rubik mt-1 text-center">
-          Create an account to start your culinary journey
-        </Text>
-      </View>
+    <View className="flex-1 bg-bg-app">
+      <StatusBar barStyle="dark-content" />
 
-      {/* Register Form Card */}
-      <View className="bg-white rounded-xl border border-borderInput p-6 shadow-lg mb-6">
-        {/* First Name Input */}
-        <View className="mb-4">
-          <Text className="text-label-md text-brand font-semibold mb-2 font-rubik">
-            FIRST NAME
+      {/* Top Header Bar */}
+      <SafeAreaView className="bg-bg-app border-b border-border-input/30 z-10">
+        <View className="h-14 justify-center items-center">
+          <Text className="text-xl font-bold text-primary font-rubik">
+            FoodTaste
           </Text>
-          <View
-            className={`flex-row items-center rounded-md border px-4 bg-bgInput transition-all ${
-              focusedField === 'firstName' ? 'border-brand' : 'border-borderInput'
-            }`}
-            style={{ height: 56 }}
-          >
-            <TextInput
-              className="flex-grow text-base text-textMain font-rubik"
-              placeholder="First name"
-              placeholderTextColor={theme.textSecondary}
-              value={firstName}
-              onChangeText={setFirstName}
-              onFocus={() => setFocusedField('firstName')}
-              onBlur={() => setFocusedField(null)}
-            />
-          </View>
         </View>
+      </SafeAreaView>
 
-        {/* Last Name Input */}
-        <View className="mb-4">
-          <Text className="text-label-md text-brand font-semibold mb-2 font-rubik">
-            LAST NAME
-          </Text>
-          <View
-            className={`flex-row items-center rounded-md border px-4 bg-bgInput transition-all ${
-              focusedField === 'lastName' ? 'border-brand' : 'border-borderInput'
-            }`}
-            style={{ height: 56 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
+        {/* Food Background Image */}
+        <ImageBackground
+          /* eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
+          source={require('../../assets/images/login_background.png')}
+          className="flex-1 justify-center"
+          resizeMode="cover"
+        >
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+            className="px-6"
+            keyboardShouldPersistTaps="handled"
           >
-            <TextInput
-              className="flex-grow text-base text-textMain font-rubik"
-              placeholder="Last name"
-              placeholderTextColor={theme.textSecondary}
-              value={lastName}
-              onChangeText={setLastName}
-              onFocus={() => setFocusedField('lastName')}
-              onBlur={() => setFocusedField(null)}
-            />
-          </View>
-        </View>
+            {/* Floating Register Card */}
+            <View className="bg-white dark:bg-[#271813] rounded-[32px] p-8 shadow-2xl border border-border-input/40 dark:border-border-input/20 my-8">
+              <Text className="text-display-lg text-text-main dark:text-text-main font-bold mb-2 text-center font-rubik">
+                Create Account
+              </Text>
+              <Text className="text-body-sm text-text-muted dark:text-text-muted text-center mb-8 font-rubik">
+                Create an account to start your culinary journey
+              </Text>
 
-        {/* Email Input */}
-        <View className="mb-4">
-          <Text className="text-label-md text-brand font-semibold mb-2 font-rubik">
-            EMAIL ADDRESS
-          </Text>
-          <View
-            className={`flex-row items-center rounded-md border px-4 bg-bgInput transition-all ${
-              focusedField === 'email' ? 'border-brand' : 'border-borderInput'
-            }`}
-            style={{ height: 56 }}
-          >
-            <TextInput
-              className="flex-grow text-base text-textMain font-rubik"
-              placeholder="Email"
-              placeholderTextColor={theme.textSecondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
-            />
-          </View>
-        </View>
-
-        {/* Password Input */}
-        <View className="mb-6">
-          <Text className="text-label-md text-brand font-semibold mb-2 font-rubik">
-            PASSWORD
-          </Text>
-          <View
-            className={`flex-row items-center rounded-md border px-4 bg-bgInput transition-all ${
-              focusedField === 'password' ? 'border-brand' : 'border-borderInput'
-            }`}
-            style={{ height: 56 }}
-          >
-            <TextInput
-              className="flex-grow text-base text-textMain font-rubik"
-              placeholder="Password (min 6 characters)"
-              placeholderTextColor={theme.textSecondary}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              onFocus={() => setFocusedField('password')}
-              onBlur={() => setFocusedField(null)}
-            />
-          </View>
-        </View>
-
-        {/* Role Selector */}
-        <View className="mb-8">
-          <Text className="text-label-md text-textMuted font-semibold mb-3 font-rubik">
-            SIGN UP AS A:
-          </Text>
-          <View className="flex-row gap-2">
-            {ROLES.map((r) => {
-              const isActive = role === r.value;
-              return (
-                <TouchableOpacity
-                  key={r.value}
-                  onPress={() => setRole(r.value)}
-                  className={`flex-1 flex-col items-center justify-center py-3 rounded-md border ${
-                    isActive
-                      ? 'bg-brand border-brand shadow-sm'
-                      : 'bg-bgInput border-borderInput'
+              {/* First Name Input */}
+              <View className="relative mb-6">
+                <View
+                  style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: -10,
+                    backgroundColor: 'white',
+                    paddingHorizontal: 8,
+                    zIndex: 10,
+                  }}
+                  className="dark:bg-[#271813]"
+                >
+                  <Text className="text-xs font-semibold text-primary dark:text-brand-light font-rubik">
+                    First Name
+                  </Text>
+                </View>
+                <View
+                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
+                    focusedField === 'firstName' ? 'border-primary' : 'border-border-input'
                   }`}
-                  activeOpacity={0.7}
+                  style={{ height: 56 }}
                 >
                   <Ionicons
-                    name={r.icon as any}
+                    name="person-outline"
                     size={20}
-                    color={isActive ? '#ffffff' : theme.textSecondary}
-                    style={{ marginBottom: 4 }}
+                    color={focusedField === 'firstName' ? '#b02f00' : '#5b4039'}
                   />
-                  <Text
-                    className={`text-xs font-semibold font-rubik ${
-                      isActive ? 'text-white' : 'text-textMuted'
-                    }`}
-                  >
-                    {r.label}
+                  <TextInput
+                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
+                    placeholder="Enter first name"
+                    placeholderTextColor="#a18882"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    onFocus={() => setFocusedField('firstName')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ paddingVertical: 0 }}
+                  />
+                </View>
+              </View>
+
+              {/* Last Name Input */}
+              <View className="relative mb-6">
+                <View
+                  style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: -10,
+                    backgroundColor: 'white',
+                    paddingHorizontal: 8,
+                    zIndex: 10,
+                  }}
+                  className="dark:bg-[#271813]"
+                >
+                  <Text className="text-xs font-semibold text-primary dark:text-brand-light font-rubik">
+                    Last Name
                   </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
+                </View>
+                <View
+                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
+                    focusedField === 'lastName' ? 'border-primary' : 'border-border-input'
+                  }`}
+                  style={{ height: 56 }}
+                >
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color={focusedField === 'lastName' ? '#b02f00' : '#5b4039'}
+                  />
+                  <TextInput
+                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
+                    placeholder="Enter last name"
+                    placeholderTextColor="#a18882"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    onFocus={() => setFocusedField('lastName')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ paddingVertical: 0 }}
+                  />
+                </View>
+              </View>
 
-        {/* Submit Button */}
-        <Pressable
-          style={{ height: 56 }}
-          className={`w-full justify-center items-center rounded-md ${
-            isLoading ? 'bg-brandLight' : 'bg-brand active:bg-brandDark'
-          }`}
-          onPress={() => {
-            void handleRegister();
-          }}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-base font-semibold text-white font-rubik">
-              Create Account
-            </Text>
-          )}
-        </Pressable>
-      </View>
+              {/* Email Input */}
+              <View className="relative mb-6">
+                <View
+                  style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: -10,
+                    backgroundColor: 'white',
+                    paddingHorizontal: 8,
+                    zIndex: 10,
+                  }}
+                  className="dark:bg-[#271813]"
+                >
+                  <Text className="text-xs font-semibold text-primary dark:text-brand-light font-rubik">
+                    Email Address
+                  </Text>
+                </View>
+                <View
+                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
+                    focusedField === 'email' ? 'border-primary' : 'border-border-input'
+                  }`}
+                  style={{ height: 56 }}
+                >
+                  <Ionicons
+                    name="mail-outline"
+                    size={20}
+                    color={focusedField === 'email' ? '#b02f00' : '#5b4039'}
+                  />
+                  <TextInput
+                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
+                    placeholder="Enter email address"
+                    placeholderTextColor="#a18882"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ paddingVertical: 0 }}
+                  />
+                </View>
+              </View>
 
-      {/* Login Footer Link */}
-      <Pressable onPress={() => router.back()}>
-        <Text className="text-center text-body-sm text-textMuted font-rubik">
-          Already have an account?{' '}
-          <Text className="font-semibold text-brand font-rubik">Sign In</Text>
-        </Text>
-      </Pressable>
-    </ScrollView>
+              {/* Password Input */}
+              <View className="relative mb-6">
+                <View
+                  style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: -10,
+                    backgroundColor: 'white',
+                    paddingHorizontal: 8,
+                    zIndex: 10,
+                  }}
+                  className="dark:bg-[#271813]"
+                >
+                  <Text className="text-xs font-semibold text-primary dark:text-brand-light font-rubik">
+                    Password
+                  </Text>
+                </View>
+                <View
+                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
+                    focusedField === 'password' ? 'border-primary' : 'border-border-input'
+                  }`}
+                  style={{ height: 56 }}
+                >
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color={focusedField === 'password' ? '#b02f00' : '#5b4039'}
+                  />
+                  <TextInput
+                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
+                    placeholder="Enter password"
+                    placeholderTextColor="#a18882"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ paddingVertical: 0 }}
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+                    <Ionicons
+                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                      size={20}
+                      color="#5b4039"
+                    />
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Role Selector */}
+              <View className="mb-8">
+                <Text className="text-xs font-bold text-text-muted dark:text-text-muted mb-3 font-rubik tracking-wider uppercase">
+                  Sign Up As A:
+                </Text>
+                <View className="flex-row gap-2">
+                  {ROLES.map((r) => {
+                    const isActive = role === r.value;
+                    return (
+                      <TouchableOpacity
+                        key={r.value}
+                        onPress={() => setRole(r.value)}
+                        className={`flex-1 flex-col items-center justify-center py-3 rounded-xl border transition-all ${
+                          isActive
+                            ? 'bg-brand border-brand shadow-md'
+                            : 'bg-white dark:bg-[#3e2c27] border-border-input'
+                        }`}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons
+                          name={r.icon as any}
+                          size={20}
+                          color={isActive ? '#ffffff' : '#5b4039'}
+                          style={{ marginBottom: 4 }}
+                        />
+                        <Text
+                          className={`text-xs font-bold font-rubik ${
+                            isActive ? 'text-white' : 'text-text-muted dark:text-text-muted'
+                          }`}
+                        >
+                          {r.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Create Account Button */}
+              <Pressable
+                style={{ height: 56 }}
+                className={`w-full justify-center items-center rounded-xl shadow-lg active:opacity-90 ${
+                  isLoading ? 'bg-brand-light' : 'bg-brand active:bg-brand-dark'
+                }`}
+                onPress={() => {
+                  void handleRegister();
+                }}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="text-lg font-bold text-white font-rubik">
+                    Create Account
+                  </Text>
+                )}
+              </Pressable>
+
+              {/* Login Footer Link */}
+              <Pressable className="mt-8" onPress={() => router.back()}>
+                <Text className="text-center text-body-sm text-text-muted dark:text-text-muted font-rubik">
+                  Already have an account?{' '}
+                  <Text className="font-bold text-primary dark:text-brand-light font-rubik">Sign In</Text>
+                </Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
