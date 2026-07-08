@@ -12,6 +12,7 @@ import * as schema from '../db/schema';
 import { JwtPayload } from '@food-delivery/types';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  //--------------- register------
   async register(dto: RegisterDto) {
     const [existing] = await this.db
       .select()
@@ -49,6 +51,7 @@ export class AuthService {
     };
   }
 
+  //--------------- login---------------
   async login(dto: LoginDto) {
     const [user] = await this.db
       .select()
@@ -80,5 +83,31 @@ export class AuthService {
     const { password, ...safeUser } = user;
     void password;
     return safeUser;
+  }
+  // --------------- get profile---
+  async getProfile(id: string) {
+    const [user] = await this.db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, id));
+
+    if (!user) throw new UnauthorizedException('User not found');
+
+    return this.sanitizeUser(user);
+  }
+
+  // --------------- update profile---
+  async updateProfile(id: string, dto: UpdateProfileDto) {
+    const [user] = await this.db
+      .update(schema.users)
+      .set({
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        avatarUrl: dto.avatarUrl
+      })
+      .where(eq(schema.users.id, id))
+      .returning();
+
+    return this.sanitizeUser(user);
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { openSettings } from 'expo-linking';
 import {
   ActivityIndicator,
@@ -13,14 +13,27 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { useImageUploader } from '@/lib/uploadthing';
 import { MenuCategory, MenuItem, RestaurantType } from '@food-delivery/types';
+import { useRestaurantStore } from '@/store/restaurant-store';
+import { useMenuStore } from '@/store/menu-store';
 
 export default function OwnerMenuScreen() {
-  const queryClient = useQueryClient();
+  const { myRestaurant: restaurant, isLoading: restaurantLoading, fetchMyRestaurant } = useRestaurantStore();
+  const {
+    categories,
+    items,
+    isLoading: menuLoading,
+    fetchMenu,
+    createCategory,
+    deleteCategory,
+    createMenuItem,
+    deleteMenuItem,
+    toggleAvailability: toggleItemAvailability,
+  } = useMenuStore();
+
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -29,86 +42,38 @@ export default function OwnerMenuScreen() {
   );
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
+  const [newItemImageUrl, setNewItemImageUrl] = useState<string | null>(null);
 
-  const {
-    data: restaurant,
-    isPending: restaurantPending,
-    isFetching: restaurantFetching,
-  } = useQuery<RestaurantType | null>({
-    queryKey: ['my-restaurant'],
-    queryFn: () =>
-      api.get<RestaurantType | null>('/restaurants/mine').then((r) => r.data),
-  });
+  const categoriesLoading = menuLoading;
 
-  const {
-    data: categories = [],
-    isPending: categoriesPending,
-    isFetching: categoriesFetching,
-  } = useQuery<MenuCategory[]>({
-    queryKey: ['categories', restaurant?.id],
-    queryFn: () =>
-      api
-        .get<MenuCategory[]>(`/menu/categories/${restaurant?.id}`)
-        .then((r) => r.data),
-    enabled: !!restaurant?.id,
-  });
+  useEffect(() => {
+    fetchMyRestaurant();
+  }, []);
 
-  const restaurantLoading = restaurantPending || restaurantFetching;
-  const categoriesLoading =
-    !!restaurant?.id && (categoriesPending || categoriesFetching);
+  useEffect(() => {
+    if (restaurant?.id) {
+      fetchMenu(restaurant.id);
+    }
+  }, [restaurant?.id]);
 
-  const { data: items = [] } = useQuery<MenuItem[]>({
-    queryKey: ['menu-items', restaurant?.id],
-    queryFn: () =>
-      api.get<MenuItem[]>(`/menu/items/${restaurant?.id}`).then((r) => r.data),
-    enabled: !!restaurant?.id,
-  });
+  const addingCategory = false;
+  const addingItem = false;
 
-  const { mutate: addCategory, isPending: addingCategory } = useMutation({
-    mutationFn: (name: string) => api.post('/menu/categories', { name }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['categories', restaurant?.id],
-      });
-      setNewCategoryName('');
-      setShowAddCategory(false);
-    },
-    onError: (e: { response?: { data?: { message?: string } } }) => {
-      Alert.alert(
-        'Error',
-        e.response?.data?.message ?? 'Could not create category',
-      );
-    },
-  });
-
-  const { mutate: deleteCategory } = useMutation({
-    mutationFn: (id: string) => api.delete(`/menu/categories/${id}`),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['categories', restaurant?.id],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ['menu-items', restaurant?.id],
-      });
-    },
-    onError: (e: { response?: { data?: { message?: string } } }) => {
-      Alert.alert(
-        'Error',
-        e.response?.data?.message ?? 'Could not delete category',
-      );
-    },
-  });
-
-  function handleAddCategory() {
+  async function handleAddCategory() {
     const name = newCategoryName.trim();
     if (!name) {
       Alert.alert('Name required', 'Please enter a category name.');
       return;
     }
-    addCategory(name);
+    if (!restaurant?.id) return;
+    try {
+      await createCategory(name, restaurant.id);
+      setNewCategoryName('');
+      setShowAddCategory(false);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not create category');
+    }
   }
-
-  const [newItemImageUrl, setNewItemImageUrl] = useState<string | null>(null);
 
   const {
     openImagePicker: openItemImagePicker,
@@ -122,47 +87,7 @@ export default function OwnerMenuScreen() {
     },
   });
 
-  const { mutate: addItem, isPending: addingItem } = useMutation({
-    mutationFn: () =>
-      api.post('/menu/items', {
-        categoryId: selectedCategoryId,
-        name: newItemName,
-        price: newItemPrice,
-        imageUrl: newItemImageUrl,
-      }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ['menu-items', restaurant?.id],
-      });
-      setNewItemName('');
-      setNewItemPrice('');
-      setNewItemImageUrl(null);
-      setShowAddItem(false);
-    },
-    onError: (e: { response?: { data?: { message?: string } } }) => {
-      Alert.alert(
-        'Error',
-        e.response?.data?.message ?? 'Could not create menu item',
-      );
-    },
-  });
-
-  const { mutate: toggleAvailability } = useMutation({
-    mutationFn: ({ id, isAvailable }: { id: string; isAvailable: boolean }) =>
-      api.patch(`/menu/items/${id}`, { isAvailable }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: ['menu-items', restaurant?.id],
-      }),
-    onError: (e: { response?: { data?: { message?: string } } }) => {
-      Alert.alert(
-        'Error',
-        e.response?.data?.message ?? 'Could not update availability',
-      );
-    },
-  });
-
-  function handleAddItem() {
+  async function handleAddItem() {
     const name = newItemName.trim();
     const price = newItemPrice.trim();
     if (!name || !price) {
@@ -173,7 +98,36 @@ export default function OwnerMenuScreen() {
       Alert.alert('Error', 'No category selected.');
       return;
     }
-    addItem();
+    try {
+      await createMenuItem({
+        categoryId: selectedCategoryId,
+        name,
+        price,
+        imageUrl: newItemImageUrl || undefined,
+      });
+      setNewItemName('');
+      setNewItemPrice('');
+      setNewItemImageUrl(null);
+      setShowAddItem(false);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not create menu item');
+    }
+  }
+
+  async function toggleAvailability({ id, isAvailable }: { id: string; isAvailable: boolean }) {
+    try {
+      await toggleItemAvailability(id, isAvailable);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not update availability');
+    }
+  }
+
+  async function deleteItem(id: string) {
+    try {
+      await deleteMenuItem(id);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not delete item');
+    }
   }
 
   function closeAddItemModal() {
@@ -182,14 +136,6 @@ export default function OwnerMenuScreen() {
     setNewItemPrice('');
     setNewItemImageUrl(null);
   }
-
-  const { mutate: deleteItem } = useMutation({
-    mutationFn: (id: string) => api.delete(`/menu/items/${id}`),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: ['menu-items', restaurant?.id],
-      }),
-  });
 
   if (restaurantLoading || categoriesLoading) {
     return (

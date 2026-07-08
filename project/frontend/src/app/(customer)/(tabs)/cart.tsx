@@ -11,10 +11,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
 import { useCartStore } from '@/store/cart-store';
+import { useOrderStore } from '@/store/order-store';
 
 export default function CartScreen() {
   const {
@@ -25,6 +24,7 @@ export default function CartScreen() {
     decrementItem,
     clearCart,
   } = useCartStore();
+  const { createOrder, isMutating: isPending } = useOrderStore();
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -33,33 +33,24 @@ export default function CartScreen() {
     0,
   );
 
-  const { mutate: placeOrder, isPending } = useMutation({
-    mutationFn: () =>
-      api.post('/orders', {
+  async function handlePlaceOrder() {
+    if (items.length === 0) return Alert.alert('Your cart is empty');
+    if (!deliveryAddress.trim())
+      return Alert.alert('Please enter your delivery address');
+    try {
+      const order = await createOrder({
         restaurantId,
         deliveryAddress,
         items: items.map((i) => ({
           menuItemId: i.id,
           quantity: String(i.quantity),
         })),
-      }),
-    onSuccess: (res) => {
+      });
       clearCart();
-      router.push(`/(customer)/order/${res.data.id}`);
-    },
-    onError: (e: any) => {
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Could not place order',
-      );
-    },
-  });
-
-  function handlePlaceOrder() {
-    if (items.length === 0) return Alert.alert('Your cart is empty');
-    if (!deliveryAddress.trim())
-      return Alert.alert('Please enter your delivery address');
-    placeOrder();
+      router.push(`/(customer)/order/${order.id}`);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || e?.message || 'Could not place order');
+    }
   }
 
   if (items.length === 0) {

@@ -10,22 +10,12 @@ import {
   Text,
   TextInput,
 } from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
+import { useRestaurantStore } from '@/store/restaurant-store';
 import { useImageUploader } from '@/lib/uploadthing';
-import { RestaurantType } from '@food-delivery/types';
 
 export default function EditRestaurantScreen() {
-  const queryClient = useQueryClient();
-
-  const { data: restaurant } = useQuery<RestaurantType | null>({
-    queryKey: ['my-restaurant'],
-    queryFn: () =>
-      api
-        .get<RestaurantType | null>('/restaurants/mine')
-        .then((res) => res.data),
-  });
+  const { myRestaurant: restaurant, updateRestaurant, isMutating: isPending } = useRestaurantStore();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -52,26 +42,21 @@ export default function EditRestaurantScreen() {
     },
   });
 
-  const { mutate: updateRestaurant, isPending } = useMutation({
-    mutationFn: () =>
-      api.patch(`/restaurants/${restaurant?.id}`, {
+  async function handleSave() {
+    if (!restaurant) return;
+    try {
+      await updateRestaurant(restaurant.id, {
         name,
         description,
         address,
         cuisineType,
-        imageUrl,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-restaurant'] });
+        imageUrl: imageUrl || undefined,
+      });
       router.back();
-    },
-    onError: (e: any) => {
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Something went wrong',
-      );
-    },
-  });
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || e?.message || 'Something went wrong');
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -139,9 +124,7 @@ export default function EditRestaurantScreen() {
 
       <Pressable
         style={styles.button}
-        onPress={() => {
-          updateRestaurant();
-        }}
+        onPress={handleSave}
         disabled={isPending || isUploading}
       >
         {isPending ? (

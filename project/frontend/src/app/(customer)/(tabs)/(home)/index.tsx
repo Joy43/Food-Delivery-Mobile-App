@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,11 +8,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
-import { RestaurantType } from '@food-delivery/types';
+import { useRestaurantStore } from '@/store/restaurant-store';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useColorScheme } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,20 +20,15 @@ export default function CustomerHomeScreen() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
   const { colorScheme, toggleColorScheme } = useColorScheme();
+  const { restaurants, isLoading, fetchRestaurants } = useRestaurantStore();
 
-  const { data: restaurants = [], isLoading } = useQuery<RestaurantType[]>({
-    queryKey: ['restaurants', debouncedSearch],
-    queryFn: () =>
-      api
-        .get<RestaurantType[]>('/restaurants', {
-          params: debouncedSearch ? { search: debouncedSearch } : undefined,
-        })
-        .then((r) => r.data),
-  });
+  useEffect(() => {
+    fetchRestaurants(debouncedSearch);
+  }, [debouncedSearch]);
 
   return (
     <SafeAreaView className="flex-1 bg-bgApp" edges={['top']}>
-      {/* Top Bar */}
+      {/*----- Top Bar -----*/}
       <View className="flex-row justify-between items-center px-4 pt-2 pb-2">
         <Pressable className="p-2 bg-bgInput rounded-full">
           <Ionicons
@@ -55,6 +48,7 @@ export default function CustomerHomeScreen() {
           />
         </Pressable>
       </View>
+      {/* ---------searchbar ---- */}
 
       <Text className="text-headline-md text-textMain px-6 pt-2 mb-3">
         What are you craving?

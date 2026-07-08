@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -18,6 +19,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 import { JwtPayload } from '@food-delivery/types';
+import { UpdateProfileDto } from './dto/profile.dto';
 
 @ApiTags('Auth')
 @Controller('auth') // /api/auth
@@ -52,6 +54,7 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  // -------- my profile----
   @Get('me')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
@@ -62,6 +65,17 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   me(@Request() req: ExpressRequest & { user: JwtPayload }) {
-    return req.user;
+    return this.authService.getProfile(req.user.sub);
+  }
+
+  // --------- update profile------
+  @Patch('profile')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update current authenticated user profile' })
+
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  profile(@Request() req: ExpressRequest & { user: JwtPayload }, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.sub, dto);
   }
 }

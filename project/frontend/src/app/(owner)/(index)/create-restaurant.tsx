@@ -10,13 +10,12 @@ import {
   TextInput,
   Image,
 } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
+import { useRestaurantStore } from '@/store/restaurant-store';
 import { useImageUploader } from '@/lib/uploadthing';
 
 export default function CreateRestaurantScreen() {
-  const queryClient = useQueryClient();
+  const { createRestaurant, isMutating: isPending } = useRestaurantStore();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
@@ -33,32 +32,22 @@ export default function CreateRestaurantScreen() {
     },
   });
 
-  const { mutate: createRestaurant, isPending } = useMutation({
-    mutationFn: () =>
-      api.post('/restaurants', {
+  async function handleSubmit() {
+    if (!name || !address || !cuisineType) {
+      return Alert.alert('Please fill in all required fields');
+    }
+    try {
+      await createRestaurant({
         name,
         description,
         address,
         cuisineType,
-        imageUrl,
-      }),
-    onSuccess: (restaurant) => {
-      void queryClient.setQueryData(['my-restaurant'], restaurant);
+        imageUrl: imageUrl || undefined,
+      });
       router.replace('/(owner)/(index)');
-    },
-    onError: (e: any) => {
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Something went wrong',
-      );
-    },
-  });
-
-  function handleSubmit() {
-    if (!name || !address || !cuisineType) {
-      return Alert.alert('Please fill in all required fields');
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || e?.message || 'Something went wrong');
     }
-    createRestaurant();
   }
 
   return (

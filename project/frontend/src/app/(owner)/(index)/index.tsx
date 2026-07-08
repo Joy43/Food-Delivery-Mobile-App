@@ -1,6 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,8 +14,10 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { RestaurantType, Order } from '@food-delivery/types';
+import { useRestaurantStore } from '@/store/restaurant-store';
+import { useOrderStore } from '@/store/order-store';
 import { useRestaurantSocket } from '@/hooks/use-order-socket';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -31,66 +32,63 @@ const STATUS_COLORS: Record<string, string> = {
 const TAB_BAR_OFFSET = 88;
 
 export default function OwnerHomeScreen() {
-  const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
+  const {
+    myRestaurant: restaurant,
+    isLoading: restaurantLoading,
+    fetchMyRestaurant,
+    toggleOpen,
+  } = useRestaurantStore();
 
   const {
-    data: restaurant,
-    isLoading,
-    isFetching,
-  } = useQuery<RestaurantType | null>({
-    queryKey: ['my-restaurant'],
-    queryFn: () =>
-      api
-        .get<RestaurantType | null>('/restaurants/mine')
-        .then((res) => res.data),
-  });
+    ownerOrders: orders,
+    isLoading: ordersLoading,
+    fetchOwnerOrders,
+    updateOrderStatus,
+  } = useOrderStore();
+
+  const [refreshing, setRefreshing] = useState(false);
 
   const restaurantUpdate = useRestaurantSocket(restaurant?.id ?? null);
 
   useEffect(() => {
+    fetchMyRestaurant();
+    fetchOwnerOrders();
+  }, []);
+
+  useEffect(() => {
     if (restaurantUpdate) {
-      queryClient.invalidateQueries({ queryKey: ['restaurant-orders'] });
+      fetchOwnerOrders();
     }
-  }, [restaurantUpdate, queryClient]);
+  }, [restaurantUpdate]);
 
-  const {
-    data: orders = [],
-    refetch,
-    isRefetching,
-  } = useQuery<Order[]>({
-    queryKey: ['restaurant-orders'],
-    queryFn: () => api.get<Order[]>('/orders/restaurant').then((r) => r.data),
-    enabled: !!restaurant,
-  });
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchMyRestaurant(), fetchOwnerOrders()]);
+    setRefreshing(false);
+  };
 
-  const { mutate: toggleOpen } = useMutation({
-    mutationFn: () =>
-      api.patch(`/restaurants/${restaurant?.id}`, {
-        isOpen: !restaurant?.isOpen,
-      }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['my-restaurant'] }),
-  });
+  const handleToggleOpen = async () => {
+    if (!restaurant) return;
+    await toggleOpen(restaurant.id, !restaurant.isOpen);
+  };
 
-  const { mutate: updateStatus } = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      api.patch(`/orders/${id}/status`, { status }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['restaurant-orders'] }),
-    onError: (e: any) =>
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Could not update status',
-      ),
-  });
+  const handleUpdateStatus = async ({ id, status }: { id: string; status: string }) => {
+    try {
+      await updateOrderStatus(id, status);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not update status');
+    }
+  };
+
+  const isLoading = restaurantLoading || ordersLoading;
 
   useEffect(() => {
     if (isLoading) return;
     if (!restaurant) {
       router.replace('/(owner)/(index)/create-restaurant');
     }
-  }, [restaurant, isLoading, isFetching]);
+  }, [restaurant, isLoading]);
 
   if (isLoading) {
     return (
@@ -113,7 +111,7 @@ export default function OwnerHomeScreen() {
       return (
         <Pressable
           style={[styles.actionButton, { backgroundColor: '#F59E0B' }]}
-          onPress={() => updateStatus({ id: order.id, status: 'PREPARING' })}
+          onPress={() => handleUpdateStatus({ id: order.id, status: 'PREPARING' })}
         >
           <Text style={styles.actionButtonText}>Start Preparing</Text>
         </Pressable>
@@ -123,7 +121,7 @@ export default function OwnerHomeScreen() {
       return (
         <Pressable
           style={[styles.actionButton, { backgroundColor: '#10B981' }]}
-          onPress={() => updateStatus({ id: order.id, status: 'READY' })}
+          onPress={() => handleUpdateStatus({ id: order.id, status: 'READY' })}
         >
           <Text style={styles.actionButtonText}>Mark Ready</Text>
         </Pressable>
@@ -145,7 +143,7 @@ export default function OwnerHomeScreen() {
               styles.toggleButton,
               restaurant?.isOpen ? styles.open : styles.closed,
             ]}
-            onPress={() => toggleOpen()}
+            onPress={handleToggleOpen}
           >
             <Text style={styles.toggleText}>
               {restaurant?.isOpen ? 'Open' : 'Closed'}
@@ -170,8 +168,11 @@ export default function OwnerHomeScreen() {
           ]}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={void refetch}
+              refreshing={ordersLoading}
+              onRefresh={() => {
+                fetchMyRestaurant();
+                fetchOwnerOrders();
+              }}
             />
           }
           ListEmptyComponent={

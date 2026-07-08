@@ -9,60 +9,64 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { io, Socket } from 'socket.io-client';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { Order } from '@food-delivery/types';
+import { useOrderStore } from '@/store/order-store';
 
 let socket: Socket | null = null;
 
 export default function DriverHomeScreen() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [incomingOrder, setIncomingOrder] = useState<Order | null>(null);
+  const [isOnline, setIsOnline] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
+  const { fetchDriverActiveOrders } = useOrderStore();
 
-  // fetch current online/offline state from GET /driver/status
-  const { data: status, isLoading } = useQuery<{ isOnline: boolean }>({
-    queryKey: ['driver-status'],
-    queryFn: () =>
-      api.get<{ isOnline: boolean }>('/driver/status').then((r) => r.data),
-  });
+  useEffect(() => {
+    api
+      .get<{ isOnline: boolean }>('/driver/status')
+      .then((r) => {
+        setIsOnline(r.data?.isOnline ?? false);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
 
-  // flip isOnline on the server via PATCH /driver/online
-  const { mutate: toggleOnline, isPending: toggling } = useMutation({
-    mutationFn: () => api.patch('/driver/online'),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ['driver-status'] }),
-  });
+  async function handleToggleOnline() {
+    if (toggling) return;
+    setToggling(true);
+    try {
+      await api.patch('/driver/online');
+      setIsOnline((prev) => !prev);
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Could not toggle status');
+    } finally {
+      setToggling(false);
+    }
+  }
 
-  // driver declines → POST /driver/orders/:id/decline
-  const { mutate: declineOrder } = useMutation({
-    mutationFn: (orderId: string) =>
-      api.post(`/driver/orders/${orderId}/decline`),
-    onSuccess: () => setIncomingOrder(null),
-    onError: (e: any) =>
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Something went wrong',
-      ),
-  });
-
-  // driver accepts → PATCH /orders/:id/status { status: 'PICKED_UP' }
-  const { mutate: acceptOrder } = useMutation({
-    mutationFn: (orderId: string) =>
-      api.patch(`/orders/${orderId}/status`, { status: 'PICKED_UP' }),
-    onSuccess: () => {
+  async function handleDeclineOrder(orderId: string) {
+    try {
+      await api.post(`/driver/orders/${orderId}/decline`);
       setIncomingOrder(null);
-      queryClient.invalidateQueries({ queryKey: ['driver-active-orders'] });
-    },
-    onError: (e: any) =>
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Something went wrong',
-      ),
-  });
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+    }
+  }
+
+  async function handleAcceptOrder(orderId: string) {
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status: 'PICKED_UP' });
+      setIncomingOrder(null);
+      await fetchDriverActiveOrders();
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+    }
+  }
 
   useEffect(() => {
     if (!user?.id) return;
@@ -94,8 +98,6 @@ export default function DriverHomeScreen() {
     );
   }
 
-  const isOnline = status?.isOnline ?? false;
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.content}>
@@ -109,9 +111,7 @@ export default function DriverHomeScreen() {
             </Text>
             <Switch
               value={isOnline}
-              onValueChange={() => {
-                toggleOnline();
-              }}
+              onValueChange={handleToggleOnline}
               disabled={toggling}
               trackColor={{ false: '#FECACA', true: '#86EFAC' }}
               thumbColor={isOnline ? '#22C55E' : '#EF4444'}
@@ -151,7 +151,7 @@ export default function DriverHomeScreen() {
             <Pressable
               style={styles.acceptButton}
               onPress={() => {
-                if (incomingOrder) acceptOrder(incomingOrder.id);
+                if (incomingOrder) handleAcceptOrder(incomingOrder.id);
               }}
             >
               <Text style={styles.acceptButtonText}>Accept</Text>
@@ -160,7 +160,7 @@ export default function DriverHomeScreen() {
             <Pressable
               style={styles.declineButton}
               onPress={() => {
-                if (incomingOrder) declineOrder(incomingOrder.id);
+                if (incomingOrder) handleDeclineOrder(incomingOrder.id);
               }}
             >
               <Text style={styles.declineButtonText}>Decline</Text>

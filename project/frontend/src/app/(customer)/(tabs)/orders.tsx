@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,10 +7,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
+import { useOrderStore } from '@/store/order-store';
 import { Order } from '@food-delivery/types';
 
 type OrderWithRestaurant = Order & {
@@ -69,11 +69,12 @@ function OrderCard({
 }
 
 export default function CustomerOrdersScreen() {
-  const { data: orders = [], isLoading } = useQuery<OrderWithRestaurant[]>({
-    queryKey: ['my-orders'],
-    queryFn: () =>
-      api.get<OrderWithRestaurant[]>('/orders/mine').then((r) => r.data),
-  });
+  const { customerOrders, isLoading, fetchCustomerOrders } = useOrderStore();
+  const orders = customerOrders as OrderWithRestaurant[];
+
+  useEffect(() => {
+    fetchCustomerOrders();
+  }, []);
 
   if (isLoading) {
     return (

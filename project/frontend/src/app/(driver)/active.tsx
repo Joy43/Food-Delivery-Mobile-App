@@ -7,51 +7,42 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { io, Socket } from 'socket.io-client';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { Order } from '@food-delivery/types';
+import { useOrderStore } from '@/store/order-store';
 
 export default function DriverActiveScreen() {
   const insets = useSafeAreaInsets();
   const TAB_BAR_OFFSET = 88;
 
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const locationWatchRef = useRef<Location.LocationSubscription | null>(null);
 
-  // driver's assigned orders — only PICKED_UP needs GPS + Mark Delivered
-  const { data: activeOrders = [], isLoading } = useQuery<Order[]>({
-    queryKey: ['driver-active-orders'],
-    queryFn: () =>
-      api
-        .get<Order[]>('/orders/mine')
-        .then((r) => r.data.filter((o) => o.status === 'PICKED_UP')),
-  });
+  const { driverActiveOrders, isLoading, fetchDriverActiveOrders, updateOrderStatus, isMutating: isPending } = useOrderStore();
 
-  const activeOrder = activeOrders[0] ?? null;
+  useEffect(() => {
+    fetchDriverActiveOrders();
+  }, []);
 
-  const { mutate: markDelivered, isPending } = useMutation({
-    mutationFn: (orderId: string) =>
-      api.patch(`/orders/${orderId}/status`, { status: 'DELIVERED' }),
-    onSuccess: () => {
+  const activeOrder = driverActiveOrders[0] ?? null;
+
+  async function handleMarkDelivered(orderId: string) {
+    try {
+      await updateOrderStatus(orderId, 'DELIVERED');
       stopTracking();
-      queryClient.invalidateQueries({ queryKey: ['driver-active-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['driver-orders'] });
-    },
-    onError: (e: any) =>
-      Alert.alert(
-        'Error',
-        e?.response?.data?.message ?? 'Something went wrong',
-      ),
-  });
+      await fetchDriverActiveOrders();
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+    }
+  }
 
   // request permission, connect socket, start GPS watch
   async function startTracking(orderId: string) {
@@ -157,7 +148,7 @@ export default function DriverActiveScreen() {
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Delivered',
-                onPress: () => markDelivered(activeOrder.id),
+                onPress: () => handleMarkDelivered(activeOrder.id),
               },
             ]);
           }}

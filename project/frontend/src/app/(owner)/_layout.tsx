@@ -1,31 +1,51 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
 import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function OwnerLayout() {
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="(index)">
-        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="shippingbox.fill" md="local_shipping" />
-      </NativeTabs.Trigger>
+    <Tabs
+      screenOptions={{ tabBarActiveTintColor: '#ff5722', headerShown: false }}
+    >
+      <Tabs.Screen
+        name="(index)"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="local-shipping" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="menu">
-        <NativeTabs.Trigger.Label>Menu</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="menucard.fill" md="restaurant_menu" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: 'Menu',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="restaurant-menu" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="analytics">
-        <NativeTabs.Trigger.Label>Analytics</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="chart.bar.xaxis" md="bar_chart" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="bar-chart" size={24} color={color} />
+          ),
+        }}
+      />
 
-      <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf="person.crop.circle.fill"
-          md="account_circle"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="account-circle" size={24} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }

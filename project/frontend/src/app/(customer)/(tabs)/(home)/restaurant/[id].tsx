@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -9,36 +10,26 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { useCartStore } from '@/store/cart-store';
+import { useRestaurantStore } from '@/store/restaurant-store';
 import { MenuCategory, MenuItem, RestaurantType } from '@food-delivery/types';
 
 export default function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addItem, restaurantId, clearCart, items } = useCartStore();
+  const { currentRestaurant: restaurant, fetchRestaurantById, isLoading: loadingRestaurant } = useRestaurantStore();
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-  const { data: restaurant, isLoading: loadingRestaurant } =
-    useQuery<RestaurantType>({
-      queryKey: ['restaurant', id],
-      queryFn: () =>
-        api.get<RestaurantType>(`/restaurants/${id}`).then((r) => r.data),
-      enabled: !!id,
-    });
-
-  const { data: categories = [] } = useQuery<MenuCategory[]>({
-    queryKey: ['categories', id],
-    queryFn: () =>
-      api.get<MenuCategory[]>(`/menu/categories/${id}`).then((r) => r.data),
-    enabled: !!id,
-  });
-
-  const { data: menuItems = [] } = useQuery<MenuItem[]>({
-    queryKey: ['menu-items', id],
-    queryFn: () => api.get<MenuItem[]>(`/menu/items/${id}`).then((r) => r.data),
-    enabled: !!id,
-  });
+  useEffect(() => {
+    if (id) {
+      fetchRestaurantById(id);
+      api.get<MenuCategory[]>(`/menu/categories/${id}`).then((r) => setCategories(r.data || []));
+      api.get<MenuItem[]>(`/menu/items/${id}`).then((r) => setMenuItems(r.data || []));
+    }
+  }, [id]);
 
   function handleAddItem(item: MenuItem) {
     if (!restaurant) return;

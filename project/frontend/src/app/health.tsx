@@ -1,18 +1,20 @@
-import { api } from '@/lib/axios';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api-client';
 import { HealthCheckResponse } from '@food-delivery/types';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
-  const {
-    data: health,
-    error,
-    isLoading,
-  } = useQuery<HealthCheckResponse>({
-    queryKey: ['health'],
-    queryFn: () =>
-      api.get<HealthCheckResponse>('/health').then((res) => res.data),
-  });
+  const [health, setHealth] = useState<HealthCheckResponse | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<HealthCheckResponse>('/health')
+      .then((res) => setHealth(res.data))
+      .catch((err) => setError(err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <View style={styles.container}>

@@ -1,29 +1,21 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { api } from '@/lib/axios';
-import { saveToken, getToken, deleteToken } from '@/lib/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getToken, deleteToken } from '@/lib/auth';
 import { User } from '@food-delivery/types';
+import { useAuthStore, RegisterPayload } from '@/store/auth-store';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
 }
 
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: string;
-  avatarUrl?: string;
-}
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, login: storeLogin, register: storeRegister, logout: storeLogout, fetchMe, clearUser } = useAuthStore();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     checkExistingSession();
@@ -33,34 +25,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await getToken();
       if (token) {
-        const res = await api.get('/auth/me');
-        setUser(res.data);
+        await fetchMe();
       }
     } catch (error) {
       await deleteToken();
+      clearUser();
     } finally {
-      setIsLoading(false);
+      setIsInitializing(false);
     }
   }
 
   async function login(email: string, password: string) {
-    const res = await api.post('/auth/login', { email, password });
-    await saveToken(res.data.token);
-    setUser(res.data.user);
+    await storeLogin(email, password);
   }
 
-  async function register(data: RegisterData) {
-    await api.post('/auth/register', data);
-    await login(data.email, data.password);
+  async function register(data: RegisterPayload) {
+    await storeRegister(data);
   }
 
   async function logout() {
-    await deleteToken();
-    setUser(null);
+    await storeLogout();
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading: isInitializing, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

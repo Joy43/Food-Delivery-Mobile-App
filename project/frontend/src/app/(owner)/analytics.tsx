@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,10 +6,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { Order, RestaurantType } from '@food-delivery/types';
+import { useRestaurantStore } from '@/store/restaurant-store';
+import { useOrderStore } from '@/store/order-store';
 
 type RestaurantOrder = Order & { items: { id: string }[] };
 
@@ -23,21 +24,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function OwnerAnalyticsScreen() {
-  const { data: restaurant, isLoading: restaurantLoading } =
-    useQuery<RestaurantType | null>({
-      queryKey: ['my-restaurant'],
-      queryFn: () =>
-        api.get<RestaurantType | null>('/restaurants/mine').then((r) => r.data),
-    });
+  const { myRestaurant: restaurant, isLoading: restaurantLoading, fetchMyRestaurant } = useRestaurantStore();
+  const { ownerOrders, isLoading: ordersLoading, fetchOwnerOrders } = useOrderStore();
+  const allOrders = ownerOrders as RestaurantOrder[];
 
-  const { data: allOrders = [], isLoading: ordersLoading } = useQuery<
-    RestaurantOrder[]
-  >({
-    queryKey: ['restaurant-orders'],
-    queryFn: () =>
-      api.get<RestaurantOrder[]>('/orders/restaurant').then((r) => r.data),
-    enabled: !!restaurant,
-  });
+  useEffect(() => {
+    fetchMyRestaurant();
+    fetchOwnerOrders();
+  }, []);
 
   // filter to today's orders only — compared on the frontend
   const todayOrders = useMemo(() => {

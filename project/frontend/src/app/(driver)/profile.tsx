@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -5,25 +6,23 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data: ratingData, isLoading } = useQuery<{
-    averageRating: number | null;
-  }>({
-    queryKey: ['driver-rating', user?.id],
-    queryFn: () =>
-      api
-        .get<{
-          averageRating: number | null;
-        }>(`/reviews/driver/${user?.id}/average`)
-        .then((r) => r.data),
-    enabled: !!user?.id,
-  });
+  useEffect(() => {
+    if (!user?.id) return;
+    setIsLoading(true);
+    api
+      .get<{ averageRating: number | null }>(`/reviews/driver/${user.id}/average`)
+      .then((r) => setAverageRating(r.data?.averageRating ?? null))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [user?.id]);
 
   return (
     <View style={styles.container}>
@@ -35,9 +34,9 @@ export default function ProfileScreen() {
 
       {isLoading ? (
         <ActivityIndicator color="#FF6B35" style={{ marginBottom: 24 }} />
-      ) : ratingData?.averageRating ? (
+      ) : averageRating ? (
         <Text style={styles.driverRating}>
-          ★ {ratingData.averageRating.toFixed(1)} driver rating
+          ★ {averageRating.toFixed(1)} driver rating
         </Text>
       ) : (
         <Text style={styles.noRating}>No ratings yet</Text>

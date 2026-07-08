@@ -1,5 +1,4 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StripeProvider } from '@stripe/stripe-react-native';
 
@@ -31,10 +30,28 @@ cssInterop(MaterialIcons, {
   },
 });
 
-const queryClient = new QueryClient();
+import { router, useSegments } from 'expo-router';
 
 function RootNavigator() {
   const { user, isLoading } = useAuth();
+  const segments = useSegments();
+
+  React.useEffect(() => {
+    if (isLoading) return;
+
+    // Check if the current segment is one of the public / auth pages
+    const currentPath = segments[0];
+    const isPublicPage =
+      currentPath === 'login' ||
+      currentPath === 'register' ||
+      currentPath === 'onboarding' ||
+      currentPath === 'health';
+
+    if (!user && !isPublicPage) {
+      router.replace('/login');
+    }
+  }, [user, isLoading, segments]);
+
   if (isLoading) return null;
 
   return (
@@ -53,15 +70,13 @@ function RootNavigator() {
 
 export default function TabLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <StripeProvider
-        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
-      >
-        <AuthProvider>
-          <AnimatedSplashOverlay />
-          <RootNavigator />
-        </AuthProvider>
-      </StripeProvider>
-    </QueryClientProvider>
+    <StripeProvider
+      publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+    >
+      <AuthProvider>
+        <AnimatedSplashOverlay />
+        <RootNavigator />
+      </AuthProvider>
+    </StripeProvider>
   );
 }

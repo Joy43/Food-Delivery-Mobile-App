@@ -9,6 +9,7 @@ export default {
     userInterfaceStyle: 'automatic',
 
     ios: {
+      bundleIdentifier: 'com.ssjoy43.frontend',
       supportsTablet: true,
     },
 

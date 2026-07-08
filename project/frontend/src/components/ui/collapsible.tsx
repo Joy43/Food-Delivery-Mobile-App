@@ -30,7 +30,7 @@ export function Collapsible({
               ios: 'chevron.right',
               android: 'chevron_right',
               web: 'chevron_right',
-            }}
+            } as any}
             size={14}
             weight="bold"
             tintColor={theme.text}

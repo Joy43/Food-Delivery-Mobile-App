@@ -11,11 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useStripe } from '@stripe/stripe-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { Order } from '@food-delivery/types';
+import { useOrderStore } from '@/store/order-store';
 import {
   useOrderSocket,
   useDriverLocationSocket,
@@ -40,12 +40,15 @@ const STATUS_ORDER = [
 
 export default function OrderConfirmationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const queryClient = useQueryClient();
   const orderUpdate = useOrderSocket(id ?? null);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { currentOrder: storeOrder, fetchOrderById, isLoading } = useOrderStore();
+  const order = storeOrder as (Order & { items: any[] }) | null;
+
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const [cachedDriverLocation, setCachedDriverLocation] = useState<{
     latitude: number;
@@ -53,26 +56,21 @@ export default function OrderConfirmationScreen() {
   } | null>(null);
 
   useEffect(() => {
-    if (orderUpdate) {
-      // update React Query cache directly — no new HTTP request needed
-      // ['order', id] must match the queryKey in useQuery above
-      queryClient.setQueryData(['order', id], (old: unknown) => ({
-        ...(old as object), // keep existing fields (items, address, totalAmount)
-        ...orderUpdate, // overwrite with pushed data (mainly status)
-      }));
+    if (id) {
+      fetchOrderById(id);
     }
-  }, [orderUpdate, id, queryClient]);
+  }, [id]);
 
-  const {
-    data: order,
-    isLoading,
-    refetch,
-  } = useQuery<Order & { items: any[] }>({
-    queryKey: ['order', id],
-    queryFn: () =>
-      api.get<Order & { items: any[] }>(`/orders/${id}`).then((r) => r.data),
-    enabled: !!id,
-  });
+  useEffect(() => {
+    if (orderUpdate && order) {
+      useOrderStore.setState({
+        currentOrder: {
+          ...order,
+          ...orderUpdate,
+        },
+      });
+    }
+  }, [orderUpdate]);
 
   useEffect(() => {
     if (!id || order?.status !== 'DELIVERED') return;
@@ -91,22 +89,23 @@ export default function OrderConfirmationScreen() {
     }
   }, [order?.status, ratingSubmitted]);
 
-  const { mutate: submitReview, isPending: isSubmittingReview } = useMutation({
-    mutationFn: (data: {
-      restaurantRating: number;
-      driverRating?: number;
-      comment?: string;
-    }) => api.post('/reviews', { orderId: id, ...data }),
-    onSuccess: () => {
+  async function submitReview(data: {
+    restaurantRating: number;
+    driverRating?: number;
+    comment?: string;
+  }) {
+    setIsSubmittingReview(true);
+    try {
+      await api.post('/reviews', { orderId: id, ...data });
       setShowRatingModal(false);
       setRatingSubmitted(true);
-      queryClient.invalidateQueries({ queryKey: ['restaurants'] });
-    },
-    onError: () => {
+    } catch {
       setShowRatingModal(false);
       setRatingSubmitted(true);
-    },
-  });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  }
 
   const liveDriverLocation = useDriverLocationSocket(
     order?.status === 'PICKED_UP' ? (id ?? null) : null,
@@ -156,7 +155,7 @@ export default function OrderConfirmationScreen() {
       let confirmed = false;
       for (let i = 0; i < 5; i++) {
         await new Promise((r) => setTimeout(r, 1000));
-        const { data } = await refetch();
+        const data = await fetchOrderById(id);
         if (data?.status === 'CONFIRMED') {
           confirmed = true;
           break;

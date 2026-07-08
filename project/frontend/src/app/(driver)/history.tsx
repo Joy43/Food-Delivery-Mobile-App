@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,11 +7,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { api } from '@/lib/axios';
+import { api } from '@/lib/api-client';
 import { Order } from '@food-delivery/types';
+import { useOrderStore } from '@/store/order-store';
 
 type DriverOrder = Order & {
   restaurant: { id: string; name: string };
@@ -71,10 +72,12 @@ function DeliveryCard({
 }
 
 export default function DriverHistoryScreen() {
-  const { data: orders = [], isLoading } = useQuery<DriverOrder[]>({
-    queryKey: ['driver-orders'],
-    queryFn: () => api.get<DriverOrder[]>('/orders/mine').then((r) => r.data),
-  });
+  const { driverHistoryOrders, isLoading, fetchDriverHistoryOrders } = useOrderStore();
+  const orders = driverHistoryOrders as DriverOrder[];
+
+  useEffect(() => {
+    fetchDriverHistoryOrders();
+  }, []);
 
   const deliveredCount = orders.filter((o) => o.status === 'DELIVERED').length;
   const inProgressCount = orders.filter((o) =>

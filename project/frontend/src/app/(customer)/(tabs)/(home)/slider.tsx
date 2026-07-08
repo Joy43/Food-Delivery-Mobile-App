@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 const { width: screenWidth } = Dimensions.get('window');
 
 // Premium layout sizing
-const CARD_WIDTH = screenWidth - 48; // Spans most of the width
+const CARD_WIDTH = screenWidth - 48; 
 const CARD_GAP = 16;
 const CARD_SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 const HORIZONTAL_PADDING = 24;
@@ -32,7 +32,7 @@ const TRENDING_DISHES = [
     title: 'Spicy Tuna Crunch',
     description: 'The most loved dish this week in your area.',
     price: '$18.50',
-    bgColor: '#ffece8', // Soft warm peach
+    bgColor: '#ffece8', 
     badgeColor: '#2a0c04',
     badgeTextColor: '#fff',
     image: require('../../../../../assets/images/sushi.png'),
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 65,
     overflow: 'hidden',
-    backgroundColor: '#000', // backup dark background
+    backgroundColor: '#000', 
   },
   image: {
     width: '100%',
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#ff5722', // primary brand color (Crave Orange)
+    backgroundColor: '#ff5722', 
     justifyContent: 'center',
     alignItems: 'center',
   },
