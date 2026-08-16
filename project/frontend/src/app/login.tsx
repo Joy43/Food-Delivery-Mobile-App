@@ -51,9 +51,9 @@ export default function LoginScreen() {
       <StatusBar barStyle="dark-content" />
 
       {/* Top Header Bar */}
-      <SafeAreaView className="bg-bg-app border-b border-border-input/30 z-10">
-        <View className="h-14 justify-center items-center">
-          <Text className="text-xl font-bold text-primary font-rubik">
+      <SafeAreaView className="bg-bg-app border-b border-border-input/30 ">
+        <View className="h-14 mb-20 justify-center items-center">
+          <Text className="text-xl mb-7 font-bold text-primary font-rubik">
             FoodTaste
           </Text>
         </View>

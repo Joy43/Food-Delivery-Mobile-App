@@ -68,9 +68,9 @@ export class RestaurantsService {
     return restaurant;
   }
 
+
+  // --------find all resturent-------
   async findAll(search?: string) {
-    // if search is provided, filter by name OR cuisine type (case-insensitive)
-    // only return open restaurants to customers
     if (search) {
       return this.db
         .select()
@@ -97,7 +97,7 @@ export class RestaurantsService {
 
     this.logger.log('Cache miss — fetching restaurants from DB');
 
-    const restaurants = this.db
+    const restaurants = await this.db
       .select()
       .from(schema.restaurants)
       .where(eq(schema.restaurants.isOpen, true));

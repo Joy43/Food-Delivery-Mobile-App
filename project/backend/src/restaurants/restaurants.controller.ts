@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
@@ -52,12 +52,13 @@ export class RestaurantsController {
     return this.restaurantsService.findMine(req.user.sub);
   }
 
+  // ------GET ALL Restaurants-----------
   @Get()
   @ApiOperation({ summary: 'Retrieve list of all active/registered restaurants' })
   @ApiResponse({ status: 200, description: 'List of restaurants returned successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Optional search query' })
   findAll(@Query('search') search?: string) {
-    // @Query('search') extracts ?search= from the URL — optional
     return this.restaurantsService.findAll(search);
   }
 
@@ -75,10 +76,7 @@ export class RestaurantsController {
   @Roles(UserRole.RESTAURANT_OWNER)
   @ApiOperation({ summary: 'Update restaurant profile details (Owner only)' })
   @ApiResponse({ status: 200, description: 'Restaurant updated successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid input data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @ApiResponse({ status: 404, description: 'Restaurant not found' })
+
   update(
     @Param('id') id: string,
     @Request() req: AuthRequest,
