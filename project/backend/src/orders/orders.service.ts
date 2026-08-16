@@ -118,8 +118,18 @@ export class OrdersService {
     if (!canView) throw new NotFoundException('Order not found');
 
     const items = await this.db
-      .select()
+      .select({
+        id: schema.orderItems.id,
+        orderId: schema.orderItems.orderId,
+        menuItemId: schema.orderItems.menuItemId,
+        quantity: schema.orderItems.quantity,
+        price: schema.orderItems.unitPrice,
+        name: schema.menuItems.name,
+        image: schema.menuItems.imageUrl,
+        description: schema.menuItems.description,
+      })
       .from(schema.orderItems)
+      .leftJoin(schema.menuItems, eq(schema.orderItems.menuItemId, schema.menuItems.id))
       .where(eq(schema.orderItems.orderId, id));
 
     return { ...order, items };

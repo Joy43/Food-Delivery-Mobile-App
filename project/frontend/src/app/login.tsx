@@ -46,17 +46,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 mt-14 bg-bg-app">
+    <SafeAreaView className="flex-1 bg-bg-app">
       <StatusBar barStyle="dark-content" />
-
-      {/* Top Header Bar */}
-      <View className="bg-bg-app border-b border-border-input/30 ">
-        <View className="h-14  m-6 mb-20 justify-center items-center">
-          <Text className="text-xl mb-7 font-bold text-primary font-rubik">
-            FoodTaste
-          </Text>
-        </View>
-      </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -75,7 +66,7 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             {/* Floating Login Card */}
-            <Card className="my-8">
+            <Card className="my-8 shadow-md">
               <Text className="text-display-lg text-text-main font-bold mb-2 text-center font-rubik">
                 Welcome Back!
               </Text>
@@ -103,7 +94,7 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 rightElement={
-                  <Pressable onPress={() => setShowPassword(!showPassword)} className="p-2">
+                  <Pressable onPress={() => setShowPassword(!showPassword)} style={{ padding: 8 }}>
                     <Ionicons
                       name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                       size={20}
@@ -115,7 +106,7 @@ export default function LoginScreen() {
 
               {/* Forgot Password Link */}
               <Pressable
-                className="self-end mb-8 mt-2"
+                style={{ alignSelf: 'flex-end', marginBottom: 32, marginTop: 8 }}
                 onPress={() =>
                   Alert.alert(
                     'Forgot Password',
@@ -138,7 +129,7 @@ export default function LoginScreen() {
 
               {/* Sign Up Footer */}
               <Pressable
-                className="mt-8"
+                style={{ marginTop: 32 }}
                 onPress={() => router.push('/register')}
               >
                 <Text className="text-center text-body-sm text-text-muted font-rubik">

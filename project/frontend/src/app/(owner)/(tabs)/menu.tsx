@@ -6,12 +6,14 @@ import {
   FlatList,
   Image,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Switch,
   Text,
   TextInput,
   View,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '@/lib/api-client';
@@ -26,6 +28,7 @@ export default function OwnerMenuScreen() {
     categories,
     items,
     isLoading: menuLoading,
+    isMutating,
     fetchMenu,
     createCategory,
     deleteCategory,
@@ -56,8 +59,8 @@ export default function OwnerMenuScreen() {
     }
   }, [restaurant?.id]);
 
-  const addingCategory = false;
-  const addingItem = false;
+  const addingCategory = isMutating;
+  const addingItem = isMutating;
 
   async function handleAddCategory() {
     const name = newCategoryName.trim();
@@ -267,110 +270,120 @@ export default function OwnerMenuScreen() {
       />
 
       <Modal visible={showAddCategory} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>New Category</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Category name"
-              value={newCategoryName}
-              onChangeText={setNewCategoryName}
-            />
-            <Pressable
-              style={styles.button}
-              onPress={handleAddCategory}
-              disabled={addingCategory || !newCategoryName.trim()}
-            >
-              {addingCategory ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Create</Text>
-              )}
-            </Pressable>
-            <Pressable onPress={() => setShowAddCategory(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>New Category</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Category name"
+                value={newCategoryName}
+                onChangeText={setNewCategoryName}
+              />
+              <Pressable
+                style={styles.button}
+                onPress={handleAddCategory}
+                disabled={addingCategory || !newCategoryName.trim()}
+              >
+                {addingCategory ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Create</Text>
+                )}
+              </Pressable>
+              <Pressable onPress={() => setShowAddCategory(false)}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal visible={showAddItem} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>New Item</Text>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>New Item</Text>
 
-            <Pressable
-              style={styles.imagePicker}
-              onPress={() =>
-                void openItemImagePicker({
-                  source: 'library',
-                  onInsufficientPermissions: () => {
-                    Alert.alert(
-                      'No Permissions',
-                      'You need to grant permission to your Photos',
-                      [
-                        { text: 'Dismiss' },
-                        {
-                          text: 'Open Settings',
-                          onPress: () => {
-                            void openSettings();
+              <Pressable
+                style={styles.imagePicker}
+                onPress={() =>
+                  void openItemImagePicker({
+                    source: 'library',
+                    onInsufficientPermissions: () => {
+                      Alert.alert(
+                        'No Permissions',
+                        'You need to grant permission to your Photos',
+                        [
+                          { text: 'Dismiss' },
+                          {
+                            text: 'Open Settings',
+                            onPress: () => {
+                              void openSettings();
+                            },
                           },
-                        },
-                      ],
-                    );
-                  },
-                })
-              }
-              disabled={uploadingItemImage}
-            >
-              {newItemImageUrl ? (
-                <Image
-                  source={{ uri: newItemImageUrl }}
-                  style={styles.itemImage}
-                />
-              ) : (
-                <Text style={styles.imagePickerText}>
-                  {uploadingItemImage
-                    ? 'Uploading...'
-                    : 'Tap to add item image'}
-                </Text>
-              )}
-            </Pressable>
+                        ],
+                      );
+                    },
+                  })
+                }
+                disabled={uploadingItemImage}
+              >
+                {newItemImageUrl ? (
+                  <Image
+                    source={{ uri: newItemImageUrl }}
+                    style={styles.itemImage}
+                  />
+                ) : (
+                  <Text style={styles.imagePickerText}>
+                    {uploadingItemImage
+                      ? 'Uploading...'
+                      : 'Tap to add item image'}
+                  </Text>
+                )}
+              </Pressable>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Item name"
-              value={newItemName}
-              onChangeText={setNewItemName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Price e.g. 8.99"
-              value={newItemPrice}
-              onChangeText={setNewItemPrice}
-              keyboardType="decimal-pad"
-            />
-            <Pressable
-              style={styles.button}
-              onPress={handleAddItem}
-              disabled={
-                addingItem ||
-                uploadingItemImage ||
-                !newItemName.trim() ||
-                !newItemPrice.trim()
-              }
-            >
-              {addingItem ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Create</Text>
-              )}
-            </Pressable>
-            <Pressable onPress={closeAddItemModal}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
+              <TextInput
+                style={styles.input}
+                placeholder="Item name"
+                value={newItemName}
+                onChangeText={setNewItemName}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Price e.g. 8.99"
+                value={newItemPrice}
+                onChangeText={setNewItemPrice}
+                keyboardType="decimal-pad"
+              />
+              <Pressable
+                style={styles.button}
+                onPress={handleAddItem}
+                disabled={
+                  addingItem ||
+                  uploadingItemImage ||
+                  !newItemName.trim() ||
+                  !newItemPrice.trim()
+                }
+              >
+                {addingItem ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Create</Text>
+                )}
+              </Pressable>
+              <Pressable onPress={closeAddItemModal}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

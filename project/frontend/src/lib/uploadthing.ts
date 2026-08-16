@@ -31,27 +31,33 @@ type ImageUploaderResult = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const UPLOAD_URL = `${process.env.EXPO_PUBLIC_SERVER_URL}/api/uploadthing`;
+const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL || 'http://localhost:3000';
+const UPLOAD_URL = `${SERVER_URL}/uploadthing`;
 
 async function uploadFileToUploadthing(
   endpoint: string,
   uri: string,
   name: string,
   mimeType: string,
+  size: number = 0,
 ): Promise<UploadedFile> {
+  const targetUrl = `${UPLOAD_URL}?actionType=upload&slug=${endpoint}`;
+
   // Step 1: Request a pre-signed URL from our uploadthing endpoint
-  const presignRes = await fetch(UPLOAD_URL, {
+  const presignRes = await fetch(targetUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      files: [{ name, size: 0, type: mimeType }],
+      files: [{ name, size, type: mimeType }],
       acl: 'public-read',
       endpoint,
     }),
   });
 
   if (!presignRes.ok) {
-    throw new Error(`Failed to get upload URL: ${presignRes.status}`);
+    const errorText = await presignRes.text();
+    console.error('Uploadthing presign error:', errorText);
+    throw new Error(`Failed to get upload URL: ${presignRes.status}. ${errorText}`);
   }
 
   const presignData = (await presignRes.json()) as Array<{
@@ -69,17 +75,20 @@ async function uploadFileToUploadthing(
   Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
   formData.append('file', { uri, name, type: mimeType } as any);
 
-  const uploadRes = await fetch(url, { method: 'POST', body: formData });
+  const uploadRes = await fetch(url, { method: 'PUT', body: formData });
   if (!uploadRes.ok) {
-    throw new Error(`Upload failed: ${uploadRes.status}`);
+    const uploadErr = await uploadRes.text();
+    throw new Error(`Upload failed: ${uploadRes.status} ${uploadErr}`);
   }
+
+  const uploadedData = await uploadRes.json();
 
   return {
     key,
-    url: fileUrl,
-    ufsUrl: ufsUrl ?? fileUrl,
+    url: uploadedData.url || `https://utfs.io/f/${key}`,
+    ufsUrl: uploadedData.ufsUrl || uploadedData.url || `https://utfs.io/f/${key}`,
     name,
-    size: 0,
+    size,
   };
 }
 
@@ -114,6 +123,7 @@ export function useImageUploader(
       const asset = result.assets[0];
       const mimeType = asset.mimeType ?? 'image/jpeg';
       const name = asset.name ?? `upload-${Date.now()}.jpg`;
+      const size = asset.size ?? 0;
 
       setIsUploading(true);
       const uploaded = await uploadFileToUploadthing(
@@ -121,6 +131,7 @@ export function useImageUploader(
         asset.uri,
         name,
         mimeType,
+        size,
       );
       props.onClientUploadComplete?.([uploaded]);
     } catch (err) {
@@ -160,6 +171,7 @@ export function useDocumentUploader(
       const asset = result.assets[0];
       const mimeType = asset.mimeType ?? 'application/octet-stream';
       const name = asset.name ?? `upload-${Date.now()}`;
+      const size = asset.size ?? 0;
 
       setIsUploading(true);
       const uploaded = await uploadFileToUploadthing(
@@ -167,6 +179,7 @@ export function useDocumentUploader(
         asset.uri,
         name,
         mimeType,
+        size,
       );
       props.onClientUploadComplete?.([uploaded]);
     } catch (err) {

@@ -65,7 +65,12 @@ export default function CreateRestaurantScreen() {
                 'You need to grant permission to your phone',
                 [
                   { text: 'Dismiss' },
-                  { text: 'Open Settings', onPress: void openSettings },
+                  {
+                    text: 'Open Settings',
+                    onPress: () => {
+                      void openSettings();
+                    },
+                  },
                 ],
               );
             },
@@ -128,7 +133,7 @@ export default function CreateRestaurantScreen() {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 24 },
+  title: { fontSize: 28, fontWeight: '700', marginBottom: 24, marginTop: 40 },
   imagePicker: {
     height: 180,
     borderRadius: 12,

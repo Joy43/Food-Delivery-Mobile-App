@@ -6,7 +6,7 @@ export default {
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'mobile',
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
 
     ios: {
       bundleIdentifier: 'com.ssjoy43.frontend',
