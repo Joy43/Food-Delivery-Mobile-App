@@ -44,7 +44,7 @@ export default function CreateRestaurantScreen() {
         cuisineType,
         imageUrl: imageUrl || undefined,
       });
-      router.replace('/(owner)/(index)');
+      router.replace('/(owner)/(tabs)/(index)');
     } catch (e: any) {
       Alert.alert('Error', e?.response?.data?.message || e?.message || 'Something went wrong');
     }

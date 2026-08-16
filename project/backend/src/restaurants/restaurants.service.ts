@@ -107,6 +107,8 @@ export class RestaurantsService {
     return restaurants;
   }
 
+  // ------- update resturent-----------
+
   async update(id: string, ownerId: string, dto: UpdateRestaurantDto) {
     const [restaurant] = await this.db
       .select()

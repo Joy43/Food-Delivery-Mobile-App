@@ -1,6 +1,6 @@
 import { getToken } from './auth';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_SERVER_URL || 'http://localhost:3000/api';
 
 async function request<T = any>(
   endpoint: string,

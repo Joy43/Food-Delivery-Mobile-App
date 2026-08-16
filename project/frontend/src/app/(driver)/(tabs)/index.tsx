@@ -4,7 +4,6 @@ import {
   Alert,
   Modal,
   Pressable,
-  StyleSheet,
   Switch,
   Text,
   View,
@@ -90,34 +89,34 @@ export default function DriverHomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#FF6B35" />
-        </View>
+      <SafeAreaView className="flex-1 items-center justify-center bg-bg-app" edges={['top']}>
+        <ActivityIndicator size="large" color="#FF6B35" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Driver Dashboard</Text>
+    <SafeAreaView className="flex-1 bg-bg-app" edges={['top']}>
+      <View className="flex-1 px-6 pt-6">
+        <Text className="text-display-sm font-bold text-text-main dark:text-text-main font-rubik mb-8">
+          Driver Dashboard
+        </Text>
 
         {/* online/offline toggle card */}
-        <View style={styles.statusCard}>
-          <View style={styles.statusRow}>
-            <Text style={styles.statusLabel}>
+        <View className="bg-white dark:bg-[#1a110f] rounded-[32px] p-6 shadow-xl border border-border-input/40 dark:border-white/5 gap-3">
+          <View className="flex-row justify-between items-center">
+            <Text className="text-title-lg font-bold text-text-main dark:text-text-main font-rubik">
               {isOnline ? '🟢 You are Online' : '🔴 You are Offline'}
             </Text>
             <Switch
               value={isOnline}
               onValueChange={handleToggleOnline}
               disabled={toggling}
-              trackColor={{ false: '#FECACA', true: '#86EFAC' }}
-              thumbColor={isOnline ? '#22C55E' : '#EF4444'}
+              trackColor={{ false: '#fecaca', true: '#86efac' }}
+              thumbColor={isOnline ? '#22c55e' : '#ef4444'}
             />
           </View>
-          <Text style={styles.statusSubtext}>
+          <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik">
             {isOnline
               ? 'You will receive delivery requests'
               : 'Go online to start receiving orders'}
@@ -127,142 +126,57 @@ export default function DriverHomeScreen() {
 
       {/* incoming order modal — shown when driver:assigned fires */}
       <Modal visible={!!incomingOrder} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>🛵 New Delivery Request</Text>
+        <View className="flex-1 bg-black/60 justify-end">
+          <View className="bg-white dark:bg-[#271813] rounded-t-[32px] p-6 pt-8 pb-10 gap-5 border-t border-border-input/30">
+            <Text className="text-headline-sm font-bold text-text-main dark:text-text-main font-rubik text-center">
+              🛵 New Delivery Request
+            </Text>
 
-            <View style={styles.orderDetails}>
-              <Text style={styles.orderLabel}>Order ID</Text>
-              <Text style={styles.orderValue}>
+            <View className="bg-bg-input rounded-3xl p-5 gap-2 border border-border-input/40 dark:border-white/5">
+              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-2">
+                Order ID
+              </Text>
+              <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik">
                 #{incomingOrder?.id.slice(0, 8).toUpperCase()}
               </Text>
 
-              <Text style={styles.orderLabel}>Deliver to</Text>
-              <Text style={styles.orderValue}>
+              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-3">
+                Deliver to
+              </Text>
+              <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik leading-tight">
                 {incomingOrder?.deliveryAddress}
               </Text>
 
-              <Text style={styles.orderLabel}>Total</Text>
-              <Text style={styles.orderValue}>
+              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-3">
+                Total
+              </Text>
+              <Text className="text-title-lg font-bold text-brand dark:text-brand-light font-rubik">
                 ${incomingOrder?.totalAmount}
               </Text>
             </View>
 
-            <Pressable
-              style={styles.acceptButton}
-              onPress={() => {
-                if (incomingOrder) handleAcceptOrder(incomingOrder.id);
-              }}
-            >
-              <Text style={styles.acceptButtonText}>Accept</Text>
-            </Pressable>
+            <View className="flex-col gap-3 mt-2">
+              <Pressable
+                className="bg-success rounded-full py-4 items-center shadow-md active:scale-95 transition-transform"
+                onPress={() => {
+                  if (incomingOrder) handleAcceptOrder(incomingOrder.id);
+                }}
+              >
+                <Text className="text-white text-title-sm font-bold font-rubik">Accept Delivery</Text>
+              </Pressable>
 
-            <Pressable
-              style={styles.declineButton}
-              onPress={() => {
-                if (incomingOrder) handleDeclineOrder(incomingOrder.id);
-              }}
-            >
-              <Text style={styles.declineButtonText}>Decline</Text>
-            </Pressable>
+              <Pressable
+                className="bg-white dark:bg-[#1a110f] border border-red-200 dark:border-red-900/30 rounded-full py-4 items-center active:scale-95 transition-transform"
+                onPress={() => {
+                  if (incomingOrder) handleDeclineOrder(incomingOrder.id);
+                }}
+              >
+                <Text className="text-error text-title-sm font-bold font-rubik">Decline</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 24,
-  },
-  statusCard: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 16,
-    padding: 20,
-    gap: 8,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusLabel: {
-    fontSize: 17,
-    fontWeight: '600',
-  },
-  statusSubtext: {
-    fontSize: 13,
-    color: '#666',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modal: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    gap: 16,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  orderDetails: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
-    padding: 16,
-    gap: 6,
-  },
-  orderLabel: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 8,
-  },
-  orderValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333',
-  },
-  acceptButton: {
-    backgroundColor: '#22C55E',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  acceptButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  declineButton: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  declineButtonText: {
-    color: '#EF4444',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

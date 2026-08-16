@@ -33,26 +33,26 @@
 /* For this warm custom theme, we maintain high visibility with custom dark mode values derived from the palette */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-app: #271813;           /* on-surface (dark background) */
-    --bg-input: #3e2c27;         /* inverse-surface */
-    --border-input: #5b4039;     /* on-surface-variant */
-    --text-main: #ffede8;        /* inverse-on-surface */
-    --text-muted: #e4beb4;       /* outline-variant */
-    --brand-color: #ff5722;      /* Crave Orange */
-    --brand-color-light: #ffb5a0;
-    --brand-color-dark: #b02f00;
+    --bg-app: #140D0B;           /* Very deep brown/black */
+    --bg-input: #221612;         /* Elevated surface */
+    --border-input: #3D2A24;     /* Subtle border */
+    --text-main: #FFF0EB;        /* Soft white/orange tint */
+    --text-muted: #D4AEA5;       /* Muted warm text */
+    --brand-color: #FF6B35;      /* Vibrant Orange */
+    --brand-color-light: #FF8E60;
+    --brand-color-dark: #E5531B;
   }
 }
 
 .dark {
-  --bg-app: #271813;
-  --bg-input: #3e2c27;
-  --border-input: #5b4039;
-  --text-main: #ffede8;
-  --text-muted: #e4beb4;
-  --brand-color: #ff5722;
-  --brand-color-light: #ffb5a0;
-  --brand-color-dark: #b02f00;
+  --bg-app: #140D0B;
+  --bg-input: #221612;
+  --border-input: #3D2A24;
+  --text-main: #FFF0EB;
+  --text-muted: #D4AEA5;
+  --brand-color: #FF6B35;
+  --brand-color-light: #FF8E60;
+  --brand-color-dark: #E5531B;
 }
 
 @layer utilities {

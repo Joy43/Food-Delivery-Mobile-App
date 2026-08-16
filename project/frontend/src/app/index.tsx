@@ -39,7 +39,7 @@ export default function Index() {
     return <Redirect href={'/(customer)' as any} />;
   if (user.role === UserRole.RESTAURANT_OWNER)
     return <Redirect href={'/(owner)' as any} />;
-  if (user.role === UserRole.DRIVER) return <Redirect href={'/(driver)'} />;
+  if (user.role === UserRole.DRIVER) return <Redirect href={'/(driver)' as any} />;
 
   return <Redirect href="/login" />;
 }

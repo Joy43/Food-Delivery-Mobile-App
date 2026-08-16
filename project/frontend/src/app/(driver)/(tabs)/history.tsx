@@ -132,7 +132,7 @@ export default function DriverHistoryScreen() {
               order={item}
               onPress={
                 item.status === 'PICKED_UP'
-                  ? () => router.push('/(driver)/active')
+                  ? () => router.push('/(driver)/(tabs)/active')
                   : undefined
               }
             />

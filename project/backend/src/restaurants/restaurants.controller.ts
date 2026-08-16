@@ -41,9 +41,9 @@ export class RestaurantsController {
     return this.restaurantsService.create(req.user.sub, dto);
   }
 
+  // ------the owner restarant-------
   @Get('mine')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.RESTAURANT_OWNER)
   @ApiOperation({ summary: 'Retrieve restaurant details managed by the logged-in owner' })
   @ApiResponse({ status: 200, description: 'Restaurant details returned successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -52,8 +52,9 @@ export class RestaurantsController {
     return this.restaurantsService.findMine(req.user.sub);
   }
 
-  // ------GET ALL Restaurants-----------
+  // ------GET ALL Restaurants only customer -----------
   @Get()
+  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Retrieve list of all active/registered restaurants' })
   @ApiResponse({ status: 200, description: 'List of restaurants returned successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

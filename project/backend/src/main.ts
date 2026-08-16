@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import * as os from 'os';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { createRouteHandler } from 'uploadthing/express';
@@ -45,7 +46,12 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  // --------- Get local IP address------------------
+  const ipAddress = Object.values(os.networkInterfaces())
+    .flat()
+    .find((i) => i?.family === 'IPv4' && !i?.internal)?.address || 'localhost';
 
+// ----------- uploading--------------------
   app.use(
     '/api/uploadthing',
     createRouteHandler({
@@ -62,5 +68,6 @@ async function bootstrap() {
   console.log(`API running on port ${port}`);
   console.log(`Backend local URL: http://localhost:${port}/api`);
   console.log(`Swagger docs available at: http://localhost:${port}/docs`);
+  console.log(`Your IP Address : http://${ipAddress}:${port}/docs`);
 }
 void bootstrap();

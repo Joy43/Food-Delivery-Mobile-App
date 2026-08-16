@@ -4,7 +4,6 @@ import {
   Alert,
   Pressable,
   Text,
-  TextInput,
   View,
   ImageBackground,
   SafeAreaView,
@@ -16,6 +15,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/auth-context';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -43,21 +45,18 @@ export default function LoginScreen() {
     }
   };
 
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-
   return (
-    <View className="flex-1 bg-bg-app">
+    <SafeAreaView className="flex-1 mt-14 bg-bg-app">
       <StatusBar barStyle="dark-content" />
 
       {/* Top Header Bar */}
-      <SafeAreaView className="bg-bg-app border-b border-border-input/30 ">
-        <View className="h-14 mb-20 justify-center items-center">
+      <View className="bg-bg-app border-b border-border-input/30 ">
+        <View className="h-14  m-6 mb-20 justify-center items-center">
           <Text className="text-xl mb-7 font-bold text-primary font-rubik">
             FoodTaste
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -76,105 +75,43 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             {/* Floating Login Card */}
-            <View className="bg-white dark:bg-[#271813] rounded-[32px] p-8 shadow-2xl border border-border-input/40 dark:border-border-input/20 my-8">
-              <Text className="text-display-lg text-text-main dark:text-text-main font-bold mb-2 text-center font-rubik">
+            <Card className="my-8">
+              <Text className="text-display-lg text-text-main font-bold mb-2 text-center font-rubik">
                 Welcome Back!
               </Text>
-              <Text className="text-body-sm text-text-muted dark:text-text-muted text-center mb-8 font-rubik">
+              <Text className="text-body-sm text-text-muted text-center mb-8 font-rubik">
                 Sign in to continue your culinary journey.
               </Text>
 
-              {/* Email Input with Overlapping Label */}
-              <View className="relative mb-6">
-                <View
-                  style={{
-                    position: 'absolute',
-                    left: 16,
-                    top: -10,
-                    backgroundColor: 'white',
-                    paddingHorizontal: 8,
-                    zIndex: 10,
-                  }}
-                  className="dark:bg-[#271813]"
-                >
-                  <Text className="text-xs font-semibold text-primary dark:text-bg-brand font-rubik">
-                    Email Address
-                  </Text>
-                </View>
-                <View
-                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
-                    isEmailFocused ? 'border-primary' : 'border-border-input'
-                  }`}
-                  style={{ height: 56 }}
-                >
-                  <Ionicons
-                    name="mail-outline"
-                    size={20}
-                    color={isEmailFocused ? '#b02f00' : '#c24c2fff'}
-                  />
-                  <TextInput
-                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
-                    placeholder="Enter your email"
-                    placeholderTextColor="#a18882"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    onFocus={() => setIsEmailFocused(true)}
-                    onBlur={() => setIsEmailFocused(false)}
-                    style={{ paddingVertical: 0 }}
-                  />
-                </View>
-              </View>
+              {/* Email Input */}
+              <Input
+                label="Email Address"
+                icon="mail-outline"
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
 
-              {/* Password Input with Overlapping Label */}
-              <View className="relative mb-2">
-                <View
-                  style={{
-                    position: 'absolute',
-                    left: 16,
-                    top: -10,
-                    backgroundColor: 'white',
-                    paddingHorizontal: 8,
-                    zIndex: 10,
-                  }}
-                  className="dark:bg-[#271813]"
-                >
-                  <Text className="text-xs font-semibold text-primary dark:text-bg-brand font-rubik">
-                    Password
-                  </Text>
-                </View>
-                <View
-                  className={`flex-row items-center rounded-lg border px-4 bg-white dark:bg-[#3e2c27] transition-all ${
-                    isPasswordFocused ? 'border-primary' : 'border-border-input'
-                  }`}
-                  style={{ height: 56 }}
-                >
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={20}
-                    color={isPasswordFocused ? '#b02f00' : '#9f5947ff'}
-                  />
-                  <TextInput
-                    className="ml-3 flex-grow text-base text-text-main dark:text-text-main font-rubik"
-                    placeholder="Enter your password"
-                    placeholderTextColor="#a18882"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    onFocus={() => setIsPasswordFocused(true)}
-                    onBlur={() => setIsPasswordFocused(false)}
-                    style={{ paddingVertical: 0 }}
-                  />
-                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+              {/* Password Input */}
+              <Input
+                label="Password"
+                icon="lock-closed-outline"
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                rightElement={
+                  <Pressable onPress={() => setShowPassword(!showPassword)} className="p-2">
                     <Ionicons
                       name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                       size={20}
-                      color="#b5472cff"
+                      color="#b5472c"
                     />
                   </Pressable>
-                </View>
-              </View>
+                }
+              />
 
               {/* Forgot Password Link */}
               <Pressable
@@ -192,39 +129,29 @@ export default function LoginScreen() {
               </Pressable>
 
               {/* Sign In Button */}
-              <Pressable
-                style={{ height: 56 }}
-                className={`w-full justify-center items-center rounded-xl shadow-lg active:opacity-90 ${
-                  isLoading ? 'bg-brand-light' : 'bg-brand active:bg-brand-dark'
-                }`}
+              <Button
                 onPress={() => void handleLogin()}
-                disabled={isLoading}
+                isLoading={isLoading}
               >
-                {isLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="text-lg font-bold text-white font-rubik">
-                    Sign In
-                  </Text>
-                )}
-              </Pressable>
+                Sign In
+              </Button>
 
               {/* Sign Up Footer */}
               <Pressable
                 className="mt-8"
                 onPress={() => router.push('/register')}
               >
-                <Text className="text-center text-body-sm text-text-muted dark:text-text-muted font-rubik">
+                <Text className="text-center text-body-sm text-text-muted font-rubik">
                   Don't have an account?{' '}
                   <Text className="font-bold text-primary dark:text-brand-light font-rubik">
                     Sign Up
                   </Text>
                 </Text>
               </Pressable>
-            </View>
+            </Card>
           </ScrollView>
         </ImageBackground>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }
