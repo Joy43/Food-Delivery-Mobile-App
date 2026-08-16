@@ -261,7 +261,7 @@ export default function RegisterScreen() {
                     onBlur={() => setFocusedField(null)}
                     style={{ paddingVertical: 0 }}
                   />
-                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+                  <Pressable onPress={() => setShowPassword(!showPassword)} style={{ padding: 8 }}>
                     <Ionicons
                       name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                       size={20}
@@ -280,15 +280,28 @@ export default function RegisterScreen() {
                   {ROLES.map((r) => {
                     const isActive = role === r.value;
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={r.value}
                         onPress={() => setRole(r.value)}
-                        className={`flex-1 flex-col items-center justify-center py-3 rounded-xl border transition-all ${
-                          isActive
-                            ? 'bg-brand border-brand shadow-md'
-                            : 'bg-white dark:bg-[#3e2c27] border-border-input'
-                        }`}
-                        activeOpacity={0.7}
+                        style={({ pressed }) => [
+                          {
+                            flex: 1,
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 12,
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            backgroundColor: isActive ? '#FF6B35' : '#ffffff',
+                            borderColor: isActive ? '#FF6B35' : '#e4beb4',
+                            shadowColor: isActive ? '#000' : 'transparent',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: isActive ? 0.1 : 0,
+                            shadowRadius: 4,
+                            elevation: isActive ? 3 : 0,
+                          },
+                          pressed && { opacity: 0.7 }
+                        ]}
                       >
                         <Ionicons
                           name={r.icon as any}
@@ -303,7 +316,7 @@ export default function RegisterScreen() {
                         >
                           {r.label}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </View>
@@ -311,10 +324,22 @@ export default function RegisterScreen() {
 
               {/* Create Account Button */}
               <Pressable
-                style={{ height: 56 }}
-                className={`w-full justify-center items-center rounded-xl shadow-lg active:opacity-90 ${
-                  isLoading ? 'bg-brand-light' : 'bg-brand active:bg-brand-dark'
-                }`}
+                style={({ pressed }) => [
+                  {
+                    height: 56,
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 12,
+                    backgroundColor: isLoading ? '#FF8E60' : '#E5531B',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
+                    elevation: 5,
+                  },
+                  pressed && { opacity: 0.9 }
+                ]}
                 onPress={() => {
                   void handleRegister();
                 }}
@@ -330,7 +355,7 @@ export default function RegisterScreen() {
               </Pressable>
 
               {/* Login Footer Link */}
-              <Pressable className="mt-8" onPress={() => router.back()}>
+              <Pressable style={{ marginTop: 32 }} onPress={() => router.back()}>
                 <Text className="text-center text-body-sm text-text-muted dark:text-text-muted font-rubik">
                   Already have an account?{' '}
                   <Text className="font-bold text-primary dark:text-brand-light font-rubik">Sign In</Text>
