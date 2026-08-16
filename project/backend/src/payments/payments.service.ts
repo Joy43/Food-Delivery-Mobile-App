@@ -81,7 +81,7 @@ export class PaymentsService {
         .from(schema.orders)
         .where(eq(schema.orders.stripePaymentIntentId, paymentIntent.id));
 
-      if (!order) return { received: true }; // order not found — ignore
+      if (!order) return { received: true }; 
 
       // idempotency check — skip if already confirmed (Stripe can resend webhooks)
       if (order.status === 'CONFIRMED') return { received: true };
@@ -95,6 +95,6 @@ export class PaymentsService {
       this.ordersGateway.emitOrderUpdate(updated);
     }
 
-    return { received: true }; // always return 200 to Stripe
+    return { received: true }; 
   }
 }

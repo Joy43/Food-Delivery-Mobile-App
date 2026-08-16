@@ -238,8 +238,18 @@ export class OrdersService {
       .where(inArray(schema.restaurants.id, restaurantIds));
 
     const items = await this.db
-      .select()
+      .select({
+        id: schema.orderItems.id,
+        orderId: schema.orderItems.orderId,
+        menuItemId: schema.orderItems.menuItemId,
+        quantity: schema.orderItems.quantity,
+        price: schema.orderItems.unitPrice,
+        name: schema.menuItems.name,
+        image: schema.menuItems.imageUrl,
+        description: schema.menuItems.description,
+      })
       .from(schema.orderItems)
+      .leftJoin(schema.menuItems, eq(schema.orderItems.menuItemId, schema.menuItems.id))
       .where(inArray(schema.orderItems.orderId, orderIds));
 
     const restaurantMap = Object.fromEntries(restaurants.map((r) => [r.id, r]));

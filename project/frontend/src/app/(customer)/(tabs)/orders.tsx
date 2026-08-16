@@ -44,7 +44,7 @@ function OrderCard({
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardHeader}>
-        <Text style={styles.restaurantName}>{order.restaurant.name}</Text>
+        <Text style={styles.restaurantName}>{order.restaurant?.name ?? 'Unknown Restaurant'}</Text>
         <View
           style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}
         >
@@ -58,7 +58,7 @@ function OrderCard({
 
       <View style={styles.cardFooter}>
         <Text style={styles.items}>
-          {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+          {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
         </Text>
         <Text style={styles.total}>
           ${Number(order.totalAmount).toFixed(2)}

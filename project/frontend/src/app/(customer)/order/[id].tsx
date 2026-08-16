@@ -9,6 +9,7 @@ import {
   Text,
   View,
   Platform,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useStripe } from '@stripe/stripe-react-native';
@@ -194,6 +195,7 @@ export default function OrderConfirmationScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* order place  */}
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.content}>
           <Text style={styles.emoji}>
@@ -209,6 +211,26 @@ export default function OrderConfirmationScreen() {
               ? 'Your payment was successful'
               : 'Complete your payment below'}
           </Text>
+          {/* show order list */}
+          <View style={styles.orderListSection}>
+            <Text style={styles.orderListTitle}>Your Order</Text>
+            {order?.items?.map((item) => (
+              <View key={item.id} style={styles.itemRow}>
+                <Image 
+                  source={{ uri: item.image || 'https://placehold.co/150x150.png' }} 
+                  style={styles.itemImage} 
+                  resizeMode="cover"
+                />
+                
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName}>{item.name}</Text>
+                  <Text style={styles.itemSubtitle}>{item.description || 'Standard'}</Text>
+                </View>
+
+                <Text style={styles.itemPrice}>${item.price}</Text>
+              </View>
+            ))}
+          </View>
 
           <View style={styles.card}>
             <Text style={styles.label}>Order ID</Text>
@@ -505,5 +527,71 @@ const styles = StyleSheet.create({
   },
   driverPin: {
     fontSize: 28,
+  },
+  orderListSection: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  orderListTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 16,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  itemImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    marginRight: 16,
+    backgroundColor: '#eee',
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222',
+  },
+  itemSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  quantityPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EBEAEF',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  qtyMinus: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '700',
+  },
+  qtyText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#333',
+    marginHorizontal: 16,
+  },
+  qtyPlus: {
+    fontSize: 14,
+    color: '#FF6B35',
+    fontWeight: '700',
+  },
+  itemPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222',
   },
 });
