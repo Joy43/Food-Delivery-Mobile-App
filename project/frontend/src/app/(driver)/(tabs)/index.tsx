@@ -14,6 +14,7 @@ import { api } from '@/lib/api-client';
 import { useAuth } from '@/context/auth-context';
 import { Order } from '@food-delivery/types';
 import { useOrderStore } from '@/store/order-store';
+import { Card } from '@/components/ui/Card';
 
 let socket: Socket | null = null;
 
@@ -76,7 +77,7 @@ export default function DriverHomeScreen() {
 
     socket.emit('join:driver', user.id);
 
-    // server pushes this when DriverService.assignDriver() runs
+    //-----server pushes this when DriverService.assignDriver()---------------
     socket.on('driver:assigned', (order: Order) => {
       setIncomingOrder(order);
     });
@@ -103,7 +104,7 @@ export default function DriverHomeScreen() {
         </Text>
 
         {/* online/offline toggle card */}
-        <View className="bg-white rounded-[32px] p-6 shadow-md border border-border-input/40 gap-3">
+        <Card className="p-6 gap-3">
           <View className="flex-row justify-between items-center">
             <Text className="text-title-lg font-bold text-text-main font-rubik">
               {isOnline ? '🟢 You are Online' : '🔴 You are Offline'}
@@ -121,7 +122,7 @@ export default function DriverHomeScreen() {
               ? 'You will receive delivery requests'
               : 'Go online to start receiving orders'}
           </Text>
-        </View>
+        </Card>
       </View>
 
       {/* incoming order modal — shown when driver:assigned fires */}

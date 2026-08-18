@@ -10,7 +10,7 @@ export function Card({ children, style, className = '', ...props }: CardProps) {
   return (
     <View
       style={[styles.liquidCard, style]}
-      className={`bg-white rounded-[32px] p-8 border-[1.5px] border-brand/40 ${className}`}
+      className={`bg-white rounded-[32px] p-8 ${className}`}
       {...props}
     >
       {children}
@@ -20,9 +20,11 @@ export function Card({ children, style, className = '', ...props }: CardProps) {
 
 const styles = StyleSheet.create({
   liquidCard: {
+    borderColor: Colors.outlineVariant,
+    borderWidth: 1.5,
     shadowColor: Colors.primaryContainer,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.1,
     shadowRadius: 24,
     elevation: 6,
   },
