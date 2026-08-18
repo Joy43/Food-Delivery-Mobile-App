@@ -22,6 +22,7 @@ import {
   useDriverLocationSocket,
 } from '@/hooks/use-order-socket';
 import { RatingModal } from '@/components/rating-modal';
+import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
 
 const STATUS_STEPS = [
   { key: 'CONFIRMED', label: 'Order Confirmed', icon: '✅' },
@@ -185,7 +186,7 @@ export default function OrderConfirmationScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#FF6B35" />
+          <ActivityIndicator size="large" color={Colors.primaryContainer} />
         </View>
       </SafeAreaView>
     );
@@ -195,7 +196,6 @@ export default function OrderConfirmationScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* order place  */}
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.content}>
           <Text style={styles.emoji}>
@@ -211,7 +211,6 @@ export default function OrderConfirmationScreen() {
               ? 'Your payment was successful'
               : 'Complete your payment below'}
           </Text>
-          {/* show order list */}
           <View style={styles.orderListSection}>
             <Text style={styles.orderListTitle}>Your Order</Text>
             {order?.items?.map((item) => (
@@ -266,7 +265,7 @@ export default function OrderConfirmationScreen() {
               disabled={paymentLoading}
             >
               {paymentLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={Colors.onPrimary} />
               ) : (
                 <Text style={styles.payButtonText}>
                   Pay ${order?.totalAmount}
@@ -275,37 +274,13 @@ export default function OrderConfirmationScreen() {
             </Pressable>
           )}
 
-          {showMap && (
-            <MapView
-              style={styles.map}
-              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-              region={{
-                latitude: driverLocation.latitude,
-                longitude: driverLocation.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={driverLocation}
-                title="Your driver"
-                description="On the way to you"
-              >
-                <Text style={styles.driverPin}>🛵</Text>
-              </Marker>
-            </MapView>
-          )}
-
-          {order?.status === 'CANCELLED' ? (
-            <View style={styles.cancelledBox}>
-              <Text style={styles.cancelledText}>❌ Order Cancelled</Text>
-            </View>
-          ) : order?.status !== 'PENDING' ? (
+          {order?.status !== 'PENDING' && order?.status !== 'CANCELLED' && (
             <View style={styles.tracker}>
-              <Text style={styles.trackerTitle}>Order Progress</Text>
+              <Text style={styles.trackerTitle}>Live Tracking</Text>
               {STATUS_STEPS.map((step, index) => {
-                const isCompleted = index <= currentIndex;
+                const isCompleted = index < currentIndex;
                 const isActive = index === currentIndex;
+                const isLast = index === STATUS_STEPS.length - 1;
                 return (
                   <View key={step.key} style={styles.step}>
                     <View style={styles.stepLeft}>
@@ -320,7 +295,7 @@ export default function OrderConfirmationScreen() {
                           {isCompleted ? step.icon : '○'}
                         </Text>
                       </View>
-                      {index < STATUS_STEPS.length - 1 && (
+                      {!isLast && (
                         <View
                           style={[
                             styles.stepLine,
@@ -332,8 +307,8 @@ export default function OrderConfirmationScreen() {
                     <Text
                       style={[
                         styles.stepLabel,
-                        isActive && styles.stepLabelActive,
                         isCompleted && styles.stepLabelCompleted,
+                        isActive && styles.stepLabelActive,
                       ]}
                     >
                       {step.label}
@@ -342,7 +317,37 @@ export default function OrderConfirmationScreen() {
                 );
               })}
             </View>
-          ) : null}
+          )}
+
+          {showMap && (
+            <MapView
+              style={styles.map}
+              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+              region={{
+                latitude: driverLocation!.latitude,
+                longitude: driverLocation!.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Marker
+                coordinate={{
+                  latitude: driverLocation!.latitude,
+                  longitude: driverLocation!.longitude,
+                }}
+                title="Driver"
+                description="Your driver is on the way!"
+              >
+                <Text style={styles.driverPin}>🛵</Text>
+              </Marker>
+            </MapView>
+          )}
+
+          {order?.status === 'CANCELLED' && (
+            <View style={styles.cancelledBox}>
+              <Text style={styles.cancelledText}>This order was cancelled</Text>
+            </View>
+          )}
 
           <Pressable
             style={styles.homeButton}
@@ -352,16 +357,18 @@ export default function OrderConfirmationScreen() {
           </Pressable>
         </View>
 
-        <RatingModal
-          visible={showRatingModal}
-          hasDriver={!!order?.driverId}
-          onSubmit={submitReview}
-          onDismiss={() => {
-            setShowRatingModal(false);
-            setRatingSubmitted(true);
-          }}
-          isSubmitting={isSubmittingReview}
-        />
+        {showRatingModal && (
+          <RatingModal
+            visible={showRatingModal}
+            hasDriver={!!order?.driverId}
+            onSubmit={submitReview}
+            onDismiss={() => {
+              setShowRatingModal(false);
+              setRatingSubmitted(true);
+            }}
+            isSubmitting={isSubmittingReview}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -370,200 +377,185 @@ export default function OrderConfirmationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: Spacing.lg,
   },
   content: {
-    padding: 24,
-    alignItems: 'center', 
+    alignItems: 'center',
+    padding: Spacing.md,
+    paddingBottom: 40,
   },
   emoji: {
-    fontSize: 72,
-    marginBottom: 16,
-    marginTop: 10,
+    fontSize: 56,
+    marginBottom: Spacing.xs,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#111827',
-    marginBottom: 8,
+    ...Typography.headlineMD,
+    fontSize: 24,
+    fontWeight: Typography.fontWeight.extrabold,
+    color: Colors.onSurface,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginBottom: 32,
+    fontSize: Typography.fontSize.base,
+    color: Colors.onSurfaceVariant,
     textAlign: 'center',
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.lg,
   },
   orderListSection: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+    ...Shadows.card,
   },
   orderListTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 16,
+    ...Typography.headlineMD,
+    fontSize: Typography.fontSize.lg,
+    color: Colors.onSurface,
+    marginBottom: Spacing.sm + 4,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.sm + 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: Colors.outlineVariant,
   },
   itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    marginRight: 16,
-    backgroundColor: '#F3F4F6',
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    marginRight: Spacing.sm + 4,
+    backgroundColor: Colors.surfaceContainerLow,
   },
   itemInfo: {
     flex: 1,
-    justifyContent: 'center',
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.onSurface,
   },
   itemSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.outline,
+    marginTop: 2,
   },
   itemPrice: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   card: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.card,
   },
   label: {
-    fontSize: 13,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginTop: 12,
+    fontSize: Typography.fontSize.xs + 1,
+    color: Colors.onSurfaceVariant,
+    fontWeight: Typography.fontWeight.semibold,
+    marginTop: Spacing.sm + 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   value: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginTop: 4,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.onSurface,
+    marginTop: Spacing.xs,
   },
   statusBadge: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginTop: 6,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: Spacing.xs + 2,
     overflow: 'hidden',
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: Spacing.sm + 4,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.lg,
   },
   confirmed: {
-    backgroundColor: '#DEF7EC',
-    color: '#03543F',
+    backgroundColor: Colors.secondaryContainer,
+    color: Colors.onSecondaryContainer,
   },
   pending: {
-    backgroundColor: '#FEF08A',
-    color: '#713F12',
+    backgroundColor: Colors.tertiaryFixed,
+    color: Colors.onTertiaryFixed,
   },
   payButton: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 16,
+    backgroundColor: Colors.primaryContainer,
+    borderRadius: Radius.xl,
     padding: 18,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#FF6B35',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    marginBottom: Spacing.lg,
+    ...Shadows.floating,
   },
   payButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    color: Colors.onPrimary,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
   },
   homeButton: {
-    borderRadius: 16,
+    borderRadius: Radius.xl,
     padding: 18,
     width: '100%',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginTop: 10,
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
+    marginTop: Spacing.sm + 2,
   },
   homeButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#374151',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   trackerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 20,
-    color: '#111827',
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    marginBottom: Spacing.lg,
+    color: Colors.onSurface,
   },
   cancelledBox: {
-    backgroundColor: '#FDF2F2',
+    backgroundColor: Colors.errorContainer,
     borderWidth: 1,
-    borderColor: '#F8B4B4',
-    borderRadius: 16,
-    padding: 20,
+    borderColor: Colors.onErrorContainer,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
     width: '100%',
   },
   cancelledText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#9B1C1C',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onErrorContainer,
   },
   tracker: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     width: '100%',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    marginBottom: Spacing.lg,
+    ...Shadows.card,
   },
   step: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 16,
+    gap: Spacing.md,
   },
   stepLeft: {
     alignItems: 'center',
@@ -572,15 +564,15 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.surfaceContainerLow,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepCircleCompleted: {
-    backgroundColor: '#DEF7EC',
+    backgroundColor: Colors.secondaryContainer,
   },
   stepCircleActive: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: Colors.primaryContainer,
   },
   stepIcon: {
     fontSize: 18,
@@ -588,31 +580,31 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 2,
     height: 36,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 4,
+    backgroundColor: Colors.outlineVariant,
+    marginVertical: Spacing.xs,
   },
   stepLineCompleted: {
-    backgroundColor: '#31C48D',
+    backgroundColor: Colors.secondary,
   },
   stepLabel: {
-    fontSize: 16,
-    color: '#9CA3AF',
-    paddingTop: 12,
-    fontWeight: '500',
+    fontSize: Typography.fontSize.base,
+    color: Colors.outline,
+    paddingTop: Spacing.sm + 4,
+    fontWeight: Typography.fontWeight.medium,
   },
   stepLabelActive: {
-    color: '#FF6B35',
-    fontWeight: '800',
+    color: Colors.primaryContainer,
+    fontWeight: Typography.fontWeight.extrabold,
   },
   stepLabelCompleted: {
-    color: '#111827',
-    fontWeight: '600',
+    color: Colors.onSurface,
+    fontWeight: Typography.fontWeight.semibold,
   },
   map: {
     width: '100%',
     height: 240,
-    borderRadius: 20,
-    marginBottom: 24,
+    borderRadius: Radius.xl,
+    marginBottom: Spacing.lg,
     overflow: 'hidden',
   },
   driverPin: {

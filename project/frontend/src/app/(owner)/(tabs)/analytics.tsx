@@ -11,6 +11,7 @@ import { api } from '@/lib/api-client';
 import { Order, RestaurantType } from '@food-delivery/types';
 import { useRestaurantStore } from '@/store/restaurant-store';
 import { useOrderStore } from '@/store/order-store';
+import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
 
 type RestaurantOrder = Order & { items: { id: string }[] };
 
@@ -159,33 +160,34 @@ export default function OwnerAnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    paddingHorizontal: 24,
-    paddingTop: 16,
+    ...Typography.headlineLGMobile,
+    color: Colors.onSurface,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
   },
   date: {
-    fontSize: 14,
-    color: '#999',
-    paddingHorizontal: 24,
-    marginBottom: 16,
-    marginTop: 4,
+    fontSize: Typography.fontSize.md,
+    color: Colors.outline,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    marginTop: Spacing.xs,
   },
   revenueCard: {
-    backgroundColor: '#f9f9f9',
-    marginHorizontal: 16,
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 16,
+    backgroundColor: Colors.surfaceContainerLow,
+    marginHorizontal: Spacing.md,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
   },
   revenueRow: {
     flexDirection: 'row',
@@ -196,32 +198,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   revenueValue: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#333',
+    fontSize: Typography.fontSize['3xl'],
+    fontWeight: Typography.fontWeight.extrabold,
+    color: Colors.onSurface,
   },
   revenueLabel: {
-    fontSize: 13,
-    color: '#999',
-    marginTop: 4,
+    fontSize: Typography.fontSize.sm,
+    color: Colors.outline,
+    marginTop: Spacing.xs,
   },
   revenueDivider: {
     width: 1,
     height: 48,
-    backgroundColor: '#e5e5e5',
+    backgroundColor: Colors.outlineVariant,
   },
   statusBreakdown: {
-    marginHorizontal: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
-    marginBottom: 16,
+    marginHorizontal: Spacing.md,
+    backgroundColor: Colors.surfaceContainerLow,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.sm + 2,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: Spacing.sm + 2,
   },
   statusDot: {
     width: 10,
@@ -230,23 +233,24 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     flex: 1,
-    fontSize: 14,
-    color: '#555',
+    fontSize: Typography.fontSize.md,
+    color: Colors.onSurfaceVariant,
   },
   statusCount: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   list: {
-    padding: 16,
-    gap: 10,
+    padding: Spacing.md,
+    gap: Spacing.sm + 2,
   },
   orderCard: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 14,
-    padding: 14,
-    gap: 4,
+    backgroundColor: Colors.surfaceContainerLow,
+    borderRadius: Radius.md + 6,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    ...Shadows.card,
   },
   orderHeader: {
     flexDirection: 'row',
@@ -254,31 +258,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   orderId: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.onSurface,
   },
   statusBadge: {
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm + 2,
     paddingVertical: 3,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: Typography.fontSize.xs + 1,
+    fontWeight: Typography.fontWeight.bold,
     letterSpacing: 0.5,
   },
   orderItems: {
-    fontSize: 13,
-    color: '#777',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.onSurfaceVariant,
   },
   orderTotal: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#999',
+    fontSize: Typography.fontSize.base,
+    color: Colors.outline,
   },
 });
+

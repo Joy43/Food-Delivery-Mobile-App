@@ -22,6 +22,7 @@ import { useRestaurantSocket } from '@/hooks/use-order-socket';
 import { useColorScheme } from 'nativewind';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
+import { useAuth } from '@/context/auth-context';
 
 const STATUS_COLORS: Record<string, string> = {
   CONFIRMED: '#3B82F6',
@@ -37,6 +38,7 @@ const TAB_BAR_OFFSET = 88;
 export default function OwnerHomeScreen() {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+  const {user}=useAuth();
   const {
     myRestaurant: restaurant,
     isLoading: restaurantLoading,
@@ -55,6 +57,10 @@ export default function OwnerHomeScreen() {
   const [isInitializing, setIsInitializing] = useState(true);
 
   const restaurantUpdate = useRestaurantSocket(restaurant?.id ?? null);
+
+
+
+  const avatarSource = user?.avatarUrl || 'https://static.vecteezy.com/system/resources/thumbnails/048/216/761/small/modern-male-avatar-with-black-hair-and-hoodie-illustration-free-png.png';
 
   useEffect(() => {
     async function loadData() {
@@ -140,20 +146,27 @@ export default function OwnerHomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-app" edges={['top']}>
-      {/* Top Header */}
-      <View className="flex-row justify-between items-center px-6 pt-4 pb-2 z-10">
-        <Text className="text-display-sm font-bold text-text-main dark:text-text-main font-rubik leading-tight">
-          Dashboard
-        </Text>
-        <View className="flex-row gap-3">
-          <Pressable className="p-3 bg-white dark:bg-[#271813] rounded-full shadow-sm border border-border-input/30 active:scale-95 transition-transform">
-            <Ionicons name="notifications-outline" size={20} className="text-text-main dark:text-text-main" />
-          </Pressable>
-          <Pressable 
-            className="p-3 bg-white dark:bg-[#271813] rounded-full shadow-sm border border-border-input/30 active:scale-95 transition-transform" 
-            onPress={toggleColorScheme}
-          >
-            <Ionicons name={colorScheme === 'dark' ? 'sunny' : 'moon'} size={20} color="#ff5722" />
+      {/*----- Enhanced Top Bar -----*/}
+      <View className="flex-row justify-between items-center px-6 pt-4 pb-4">
+        {/* -----profile image------ */}
+        <Pressable
+          onPress={() => router.push('/(owner)/(tabs)/profile')}
+          className="w-12 h-12 overflow-hidden rounded-full border-2 border-brand shadow-sm active:opacity-80"
+        >
+          <Image
+            source={{ uri: avatarSource }}
+            className="w-12 h-12"
+            resizeMode="cover"
+          />
+        </Pressable>
+
+        {/*  notification icon---- */}
+        <View className="flex-row items-center space-x-4">
+          <Pressable onPress={() => router.push('/(owner)/(tabs)/analytics')} className="relative">
+            <Ionicons name="notifications-outline" size={22} color="#a18882" />
+            <View className="absolute -top-1 -right-1 bg-danger w-5 h-5 rounded-full flex-row items-center justify-center">
+              <Text className="text-[10px] font-bold text-white">1</Text>
+            </View>
           </Pressable>
         </View>
       </View>
@@ -177,7 +190,7 @@ export default function OwnerHomeScreen() {
         ListHeaderComponent={
           <View className="mb-6">
             {/* Premium Restaurant Info Card */}
-            <Card className="mb-8 p-0 overflow-hidden border border-border-input/40 dark:border-white/5">
+            <Card className="mb-8 p-0 overflow-hidden border border-border-input/40">
               {/* Immersive Banner Image */}
               <View className="relative w-full h-48">
                 {restaurant?.imageUrl ? (
@@ -203,27 +216,27 @@ export default function OwnerHomeScreen() {
                 </Pressable>
               </View>
 
-              {/* Restaurant Details */}
+              {/* ----------Restaurant Details----------------------- */}
               <View className="p-6">
                 <View className="flex-row justify-between items-start mb-2">
                   <View className="flex-1 pr-4">
-                    <Text className="text-display-xs font-bold text-text-main dark:text-text-main font-rubik mb-1">
+                    <Text className="text-display-xs font-bold text-text-main font-rubik mb-1">
                       {restaurant?.name}
                     </Text>
-                    <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik">
+                    <Text className="text-body-sm text-text-muted font-rubik">
                       {restaurant?.cuisineType} • {restaurant?.address}
                     </Text>
                   </View>
-                  <View className="bg-brand/10 dark:bg-brand/20 px-3 py-2 rounded-xl flex-row items-center">
+                  <View className="bg-brand/10 px-3 py-2 rounded-xl flex-row items-center">
                     <Ionicons name="star" size={14} color="#FF6B35" />
-                    <Text className="text-sm font-bold text-brand dark:text-brand-light font-rubik ml-1">
+                    <Text className="text-sm font-bold text-brand font-rubik ml-1">
                       {Number(restaurant?.rating) > 0 ? Number(restaurant?.rating).toFixed(1) : 'New'}
                     </Text>
                   </View>
                 </View>
 
                 {restaurant?.description && (
-                  <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik mt-2 mb-5 italic leading-relaxed">
+                  <Text className="text-body-sm text-text-muted font-rubik mt-2 mb-5 italic leading-relaxed">
                     "{restaurant.description}"
                   </Text>
                 )}
@@ -234,7 +247,7 @@ export default function OwnerHomeScreen() {
                 >
                   <View className="flex-row items-center">
                     <Ionicons name="create-outline" size={18} color="#FF6B35" className="mr-2" />
-                    <Text className="text-label-md font-bold text-brand dark:text-brand-light font-rubik ml-1">
+                    <Text className="text-label-md font-bold text-brand font-rubik ml-1">
                       Edit Restaurant Profile
                     </Text>
                   </View>
@@ -244,7 +257,7 @@ export default function OwnerHomeScreen() {
 
             {/* Active Orders Section Header */}
             {activeOrders.length > 0 ? (
-              <Text className="text-headline-sm font-bold mb-4 text-text-main dark:text-text-main font-rubik">
+              <Text className="text-headline-sm font-bold mb-4 text-text-main font-rubik">
                 Active Orders ({activeOrders.length})
               </Text>
             ) : null}
@@ -252,17 +265,17 @@ export default function OwnerHomeScreen() {
         }
         ListEmptyComponent={
           <View className="items-center justify-center pt-8">
-            <Text className="text-body-md text-text-muted dark:text-text-muted font-rubik">No active orders</Text>
+            <Text className="text-body-md text-text-muted font-rubik">No active orders</Text>
           </View>
         }
         ListFooterComponent={
           pastOrders.length > 0 ? (
             <View className="mt-8">
-              <Text className="text-headline-sm font-bold mb-4 text-text-main dark:text-text-main font-rubik">Past Orders</Text>
+              <Text className="text-headline-sm font-bold mb-4 text-text-main font-rubik">Past Orders</Text>
               {pastOrders.slice(0, 5).map((order) => (
-                <View key={order.id} className="rounded-[32px] border border-border-input/40 dark:border-white/5 bg-white dark:bg-[#1a110f] p-5 mb-5 shadow-lg shadow-black/5 dark:shadow-black/40 gap-2">
+                <View key={order.id} className="rounded-[32px] border border-border-input/40 bg-white p-5 mb-5 shadow-sm gap-2">
                   <View className="flex-row justify-between items-center">
-                    <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik">
+                    <Text className="text-title-md font-bold text-text-main font-rubik">
                       #{order.id.slice(0, 8).toUpperCase()}
                     </Text>
                     <View
@@ -277,8 +290,8 @@ export default function OwnerHomeScreen() {
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-title-lg font-bold text-brand dark:text-brand-light font-rubik">${order.totalAmount}</Text>
-                  <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik" numberOfLines={1}>
+                  <Text className="text-title-lg font-bold text-brand font-rubik">${order.totalAmount}</Text>
+                  <Text className="text-body-sm text-text-muted font-rubik" numberOfLines={1}>
                     {order.deliveryAddress}
                   </Text>
                 </View>
@@ -287,9 +300,9 @@ export default function OwnerHomeScreen() {
           ) : null
         }
         renderItem={({ item: order }) => (
-          <View className="rounded-[32px] border border-border-input/40 dark:border-white/5 bg-white dark:bg-[#1a110f] p-5 mb-5 shadow-xl shadow-black/5 dark:shadow-black/40 gap-2">
+          <View className="rounded-[32px] border border-border-input/40 bg-white p-5 mb-5 shadow-sm gap-2">
             <View className="flex-row justify-between items-center">
-              <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik">
+              <Text className="text-title-md font-bold text-text-main font-rubik">
                 #{order.id.slice(0, 8).toUpperCase()}
               </Text>
               <View
@@ -304,8 +317,8 @@ export default function OwnerHomeScreen() {
                 </Text>
               </View>
             </View>
-            <Text className="text-title-lg font-bold text-brand dark:text-brand-light font-rubik">${order.totalAmount}</Text>
-            <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik" numberOfLines={1}>
+            <Text className="text-title-lg font-bold text-brand font-rubik">${order.totalAmount}</Text>
+            <Text className="text-body-sm text-text-muted font-rubik" numberOfLines={1}>
               {order.deliveryAddress}
             </Text>
             {renderActionButton(order)}

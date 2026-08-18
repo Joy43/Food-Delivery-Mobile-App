@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function CustomerSearchScreen() {
+export default function CustomerMessageScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Customer Search</Text>
+      <Text style={styles.text}>Customer Message</Text>
     </View>
   );
 }

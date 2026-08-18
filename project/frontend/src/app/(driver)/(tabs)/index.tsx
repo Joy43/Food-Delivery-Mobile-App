@@ -98,14 +98,14 @@ export default function DriverHomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-app" edges={['top']}>
       <View className="flex-1 px-6 pt-6">
-        <Text className="text-display-sm font-bold text-text-main dark:text-text-main font-rubik mb-8">
+        <Text className="text-display-sm font-bold text-text-main font-rubik mb-8">
           Driver Dashboard
         </Text>
 
         {/* online/offline toggle card */}
-        <View className="bg-white dark:bg-[#1a110f] rounded-[32px] p-6 shadow-xl border border-border-input/40 dark:border-white/5 gap-3">
+        <View className="bg-white rounded-[32px] p-6 shadow-md border border-border-input/40 gap-3">
           <View className="flex-row justify-between items-center">
-            <Text className="text-title-lg font-bold text-text-main dark:text-text-main font-rubik">
+            <Text className="text-title-lg font-bold text-text-main font-rubik">
               {isOnline ? '🟢 You are Online' : '🔴 You are Offline'}
             </Text>
             <Switch
@@ -116,7 +116,7 @@ export default function DriverHomeScreen() {
               thumbColor={isOnline ? '#22c55e' : '#ef4444'}
             />
           </View>
-          <Text className="text-body-sm text-text-muted dark:text-text-muted font-rubik">
+          <Text className="text-body-sm text-text-muted font-rubik">
             {isOnline
               ? 'You will receive delivery requests'
               : 'Go online to start receiving orders'}
@@ -127,30 +127,30 @@ export default function DriverHomeScreen() {
       {/* incoming order modal — shown when driver:assigned fires */}
       <Modal visible={!!incomingOrder} transparent animationType="slide">
         <View className="flex-1 bg-black/60 justify-end">
-          <View className="bg-white dark:bg-[#271813] rounded-t-[32px] p-6 pt-8 pb-10 gap-5 border-t border-border-input/30">
-            <Text className="text-headline-sm font-bold text-text-main dark:text-text-main font-rubik text-center">
+          <View className="bg-white rounded-t-[32px] p-6 pt-8 pb-10 gap-5 border-t border-border-input/30">
+            <Text className="text-headline-sm font-bold text-text-main font-rubik text-center">
               🛵 New Delivery Request
             </Text>
 
-            <View className="bg-bg-input rounded-3xl p-5 gap-2 border border-border-input/40 dark:border-white/5">
-              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-2">
+            <View className="bg-bg-input rounded-3xl p-5 gap-2 border border-border-input/40">
+              <Text className="text-label-sm text-text-muted font-rubik uppercase tracking-wider mt-2">
                 Order ID
               </Text>
-              <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik">
+              <Text className="text-title-md font-bold text-text-main font-rubik">
                 #{incomingOrder?.id.slice(0, 8).toUpperCase()}
               </Text>
 
-              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-3">
+              <Text className="text-label-sm text-text-muted font-rubik uppercase tracking-wider mt-3">
                 Deliver to
               </Text>
-              <Text className="text-title-md font-bold text-text-main dark:text-text-main font-rubik leading-tight">
+              <Text className="text-title-md font-bold text-text-main font-rubik leading-tight">
                 {incomingOrder?.deliveryAddress}
               </Text>
 
-              <Text className="text-label-sm text-text-muted dark:text-text-muted font-rubik uppercase tracking-wider mt-3">
+              <Text className="text-label-sm text-text-muted font-rubik uppercase tracking-wider mt-3">
                 Total
               </Text>
-              <Text className="text-title-lg font-bold text-brand dark:text-brand-light font-rubik">
+              <Text className="text-title-lg font-bold text-brand font-rubik">
                 ${incomingOrder?.totalAmount}
               </Text>
             </View>
@@ -166,7 +166,7 @@ export default function DriverHomeScreen() {
               </Pressable>
 
               <Pressable
-                className="bg-white dark:bg-[#1a110f] border border-red-200 dark:border-red-900/30 rounded-full py-4 items-center active:scale-95 transition-transform"
+                className="bg-white border border-red-200 rounded-full py-4 items-center active:scale-95 transition-transform"
                 onPress={() => {
                   if (incomingOrder) handleDeclineOrder(incomingOrder.id);
                 }}

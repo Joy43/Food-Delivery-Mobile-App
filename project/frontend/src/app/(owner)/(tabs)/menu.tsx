@@ -14,13 +14,14 @@ import {
   TextInput,
   View,
   KeyboardAvoidingView,
-} from 'react-native';
+} from 'react-native';   
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '@/lib/api-client';
 import { useImageUploader } from '@/lib/uploadthing';
 import { MenuCategory, MenuItem, RestaurantType } from '@food-delivery/types';
 import { useRestaurantStore } from '@/store/restaurant-store';
 import { useMenuStore } from '@/store/menu-store';
+import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
 
 export default function OwnerMenuScreen() {
   const { myRestaurant: restaurant, isLoading: restaurantLoading, fetchMyRestaurant } = useRestaurantStore();
@@ -46,8 +47,11 @@ export default function OwnerMenuScreen() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemImageUrl, setNewItemImageUrl] = useState<string | null>(null);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [addingItem, setAddingItem] = useState(false);
 
-  const categoriesLoading = menuLoading;
+  // Only block the whole screen on initial load, not on mutations
+  const categoriesLoading = menuLoading && categories.length === 0;
 
   useEffect(() => {
     fetchMyRestaurant();
@@ -59,9 +63,6 @@ export default function OwnerMenuScreen() {
     }
   }, [restaurant?.id]);
 
-  const addingCategory = isMutating;
-  const addingItem = isMutating;
-
   async function handleAddCategory() {
     const name = newCategoryName.trim();
     if (!name) {
@@ -69,12 +70,16 @@ export default function OwnerMenuScreen() {
       return;
     }
     if (!restaurant?.id) return;
+    // Close modal first to avoid re-render collision with FlatList update
+    setShowAddCategory(false);
+    setNewCategoryName('');
+    setAddingCategory(true);
     try {
       await createCategory(name, restaurant.id);
-      setNewCategoryName('');
-      setShowAddCategory(false);
     } catch (e: any) {
       Alert.alert('Error', e?.response?.data?.message || 'Could not create category');
+    } finally {
+      setAddingCategory(false);
     }
   }
 
@@ -101,6 +106,12 @@ export default function OwnerMenuScreen() {
       Alert.alert('Error', 'No category selected.');
       return;
     }
+    // Close modal first to avoid re-render collision with FlatList update
+    setShowAddItem(false);
+    setNewItemName('');
+    setNewItemPrice('');
+    setNewItemImageUrl(null);
+    setAddingItem(true);
     try {
       await createMenuItem({
         categoryId: selectedCategoryId,
@@ -108,12 +119,10 @@ export default function OwnerMenuScreen() {
         price,
         imageUrl: newItemImageUrl || undefined,
       });
-      setNewItemName('');
-      setNewItemPrice('');
-      setNewItemImageUrl(null);
-      setShowAddItem(false);
     } catch (e: any) {
       Alert.alert('Error', e?.response?.data?.message || 'Could not create menu item');
+    } finally {
+      setAddingItem(false);
     }
   }
 
@@ -164,12 +173,7 @@ export default function OwnerMenuScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Pressable
-        style={styles.addButton}
-        onPress={() => setShowAddCategory(true)}
-      >
-        <Text style={styles.addButtonText}>+ Add Category</Text>
-      </Pressable>
+    
 
       <FlatList
         style={styles.list}
@@ -269,117 +273,158 @@ export default function OwnerMenuScreen() {
         }}
       />
 
-      <Modal visible={showAddCategory} transparent animationType="slide">
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
+      {/* Add Category Bottom Sheet Modal */}
+      <Modal
+        visible={showAddCategory}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAddCategory(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modal}>
-              <Text style={styles.modalTitle}>New Category</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Category name"
-                value={newCategoryName}
-                onChangeText={setNewCategoryName}
-              />
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setShowAddCategory(false)}
+          />
+          <View style={styles.bottomSheet}>
+            {/* Drag Handle */}
+            <View style={styles.dragHandle} />
+
+
+            <View style={styles.sheetActions}>
               <Pressable
-                style={styles.button}
+                style={styles.cancelButton}
+                onPress={() => setShowAddCategory(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.createButton,
+                  (!newCategoryName.trim() || addingCategory) && styles.createButtonDisabled,
+                ]}
                 onPress={handleAddCategory}
                 disabled={addingCategory || !newCategoryName.trim()}
               >
                 {addingCategory ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.buttonText}>Create</Text>
+                  <Text style={styles.createButtonText}>Create</Text>
                 )}
-              </Pressable>
-              <Pressable onPress={() => setShowAddCategory(false)}>
-                <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      <Modal visible={showAddItem} transparent animationType="slide">
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
+      {/* Add Item Bottom Sheet Modal */}
+      <Modal
+        visible={showAddItem}
+        transparent
+        animationType="slide"
+        onRequestClose={closeAddItemModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modal}>
-              <Text style={styles.modalTitle}>New Item</Text>
+          <Pressable style={styles.modalBackdrop} onPress={closeAddItemModal} />
+          <View style={styles.bottomSheet}>
+            {/* Drag Handle */}
+            <View style={styles.dragHandle} />
 
-              <Pressable
-                style={styles.imagePicker}
-                onPress={() =>
-                  void openItemImagePicker({
-                    source: 'library',
-                    onInsufficientPermissions: () => {
-                      Alert.alert(
-                        'No Permissions',
-                        'You need to grant permission to your Photos',
-                        [
-                          { text: 'Dismiss' },
-                          {
-                            text: 'Open Settings',
-                            onPress: () => {
-                              void openSettings();
-                            },
-                          },
-                        ],
-                      );
-                    },
-                  })
-                }
-                disabled={uploadingItemImage}
-              >
-                {newItemImageUrl ? (
-                  <Image
-                    source={{ uri: newItemImageUrl }}
-                    style={styles.itemImage}
-                  />
-                ) : (
-                  <Text style={styles.imagePickerText}>
-                    {uploadingItemImage
-                      ? 'Uploading...'
-                      : 'Tap to add item image'}
+            <Text style={styles.sheetTitle}>New Menu Item</Text>
+            <Text style={styles.sheetSubtitle}>
+              Fill in the details for your new dish
+            </Text>
+
+            {/* Image Picker */}
+            <Pressable
+              style={styles.imagePickerNew}
+              onPress={() =>
+                void openItemImagePicker({
+                  source: 'library',
+                  onInsufficientPermissions: () => {
+                    Alert.alert(
+                      'No Permissions',
+                      'You need to grant permission to your Photos',
+                      [
+                        { text: 'Dismiss' },
+                        {
+                          text: 'Open Settings',
+                          onPress: () => { void openSettings(); },
+                        },
+                      ],
+                    );
+                  },
+                })
+              }
+              disabled={uploadingItemImage}
+            >
+              {newItemImageUrl ? (
+                <Image
+                  source={{ uri: newItemImageUrl }}
+                  style={styles.imagePreview}
+                />
+              ) : (
+                <View style={styles.imagePickerInner}>
+                  <Text style={styles.imagePickerIcon}>📷</Text>
+                  <Text style={styles.imagePickerLabel}>
+                    {uploadingItemImage ? 'Uploading…' : 'Add Photo (optional)'}
                   </Text>
-                )}
-              </Pressable>
+                </View>
+              )}
+            </Pressable>
 
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Item Name</Text>
               <TextInput
-                style={styles.input}
-                placeholder="Item name"
+                style={styles.styledInput}
+                placeholder="e.g. Margherita Pizza"
+                placeholderTextColor="#9CA3AF"
                 value={newItemName}
                 onChangeText={setNewItemName}
+                autoFocus
+                returnKeyType="next"
               />
+            </View>
+
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Price ($)</Text>
               <TextInput
-                style={styles.input}
-                placeholder="Price e.g. 8.99"
+                style={styles.styledInput}
+                placeholder="0.00"
+                placeholderTextColor="#9CA3AF"
                 value={newItemPrice}
                 onChangeText={setNewItemPrice}
                 keyboardType="decimal-pad"
+                returnKeyType="done"
+                onSubmitEditing={handleAddItem}
               />
+            </View>
+
+            <View style={styles.sheetActions}>
+              <Pressable style={styles.cancelButton} onPress={closeAddItemModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
               <Pressable
-                style={styles.button}
+                style={[
+                  styles.createButton,
+                  (addingItem || uploadingItemImage || !newItemName.trim() || !newItemPrice.trim()) &&
+                    styles.createButtonDisabled,
+                ]}
                 onPress={handleAddItem}
-                disabled={
-                  addingItem ||
-                  uploadingItemImage ||
-                  !newItemName.trim() ||
-                  !newItemPrice.trim()
-                }
+                disabled={addingItem || uploadingItemImage || !newItemName.trim() || !newItemPrice.trim()}
               >
                 {addingItem ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.buttonText}>Create</Text>
+                  <Text style={styles.createButtonText}>Add Item</Text>
                 )}
-              </Pressable>
-              <Pressable onPress={closeAddItemModal}>
-                <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
             </View>
           </View>
@@ -392,7 +437,8 @@ export default function OwnerMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    marginTop:12,
+    backgroundColor: Colors.background,
   },
   list: {
     flex: 1,
@@ -401,60 +447,62 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.lg,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: Typography.fontSize.base,
+    color: Colors.onSurfaceVariant,
     textAlign: 'center',
   },
   addButton: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 14,
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm + 4,
+    padding: Spacing.md,
+    backgroundColor: Colors.primaryContainer,
+    borderRadius: Radius.full,
     alignItems: 'center',
+    ...Shadows.floating,
   },
   addButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
+    color: Colors.onPrimary,
+    fontWeight: Typography.fontWeight.semibold,
+    fontSize: Typography.fontSize.base,
   },
   categoryBlock: {
-    marginHorizontal: 16,
-    marginBottom: 24,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   categoryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: Spacing.sm + 2,
   },
   categoryName: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   deleteText: {
-    color: '#EF4444',
-    fontSize: 14,
+    color: Colors.error,
+    fontSize: Typography.fontSize.md,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: Spacing.sm + 2,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#eee',
-    gap: 10,
+    borderBottomColor: Colors.outlineVariant,
+    gap: Spacing.sm + 2,
   },
   itemThumb: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: Radius.md,
   },
   itemActions: {
     alignItems: 'flex-end',
-    gap: 4,
+    gap: Spacing.xs,
     flexShrink: 0,
   },
   itemInfo: {
@@ -462,96 +510,159 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   itemName: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.onSurface,
   },
   itemPrice: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.onSurfaceVariant,
     marginTop: 2,
   },
   availabilityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Spacing.xs + 2,
     flexShrink: 0,
   },
   availabilityLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#666',
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.onSurfaceVariant,
     width: 72,
     textAlign: 'right',
   },
   addItemButton: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#FF6B35',
+    marginTop: Spacing.sm + 2,
+    padding: Spacing.sm + 2,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.primaryContainer,
     borderStyle: 'dashed',
     alignItems: 'center',
   },
   addItemText: {
-    color: '#FF6B35',
-    fontSize: 14,
+    color: Colors.primaryContainer,
+    fontSize: Typography.fontSize.md,
   },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
   },
-  modal: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    gap: 12,
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 4,
+  bottomSheet: {
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: 36,
+    paddingTop: Spacing.sm + 4,
+    gap: Spacing.md,
+    ...Shadows.sheet,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 14,
-    fontSize: 16,
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.outlineVariant,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: Spacing.sm,
   },
-  button: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
-    padding: 16,
+  sheetTitle: {
+    ...Typography.headlineMD,
+    fontSize: 22,
+    fontWeight: Typography.fontWeight.extrabold,
+    color: Colors.onSurface,
+  },
+  sheetSubtitle: {
+    fontSize: Typography.fontSize.md,
+    color: Colors.onSurfaceVariant,
+    marginTop: -Spacing.sm,
+  },
+  inputWrapper: {
+    gap: Spacing.xs + 2,
+  },
+  inputLabel: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.onSurface,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  styledInput: {
+    backgroundColor: Colors.surfaceContainerLow,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    fontSize: Typography.fontSize.base,
+    color: Colors.onSurface,
+  },
+  sheetActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm + 4,
+    marginTop: Spacing.xs,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
     alignItems: 'center',
+    backgroundColor: Colors.surfaceContainerLow,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  cancelButtonText: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.onSurface,
   },
-  cancelText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 15,
+  createButton: {
+    flex: 2,
+    paddingVertical: 15,
+    borderRadius: Radius.lg,
+    backgroundColor: Colors.primaryContainer,
+    alignItems: 'center',
+    ...Shadows.floating,
   },
-  imagePicker: {
-    height: 120,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  createButtonDisabled: {
+    backgroundColor: Colors.primaryFixedDim,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  createButtonText: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onPrimary,
+  },
+  imagePickerNew: {
+    height: 100,
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
     borderStyle: 'dashed',
+    backgroundColor: Colors.surfaceContainerLow,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  itemImage: {
+  imagePickerInner: {
+    alignItems: 'center',
+    gap: Spacing.xs + 2,
+  },
+  imagePickerIcon: {
+    fontSize: 24,
+  },
+  imagePickerLabel: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.onSurfaceVariant,
+    fontWeight: Typography.fontWeight.medium,
+  },
+  imagePreview: {
     width: '100%',
     height: '100%',
-  },
-  imagePickerText: {
-    color: '#999',
-    fontSize: 13,
   },
 });

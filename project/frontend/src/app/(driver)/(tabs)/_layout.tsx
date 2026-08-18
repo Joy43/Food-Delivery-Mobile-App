@@ -1,11 +1,17 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Colors } from '@/constants/theme';
 
 export default function DriverLayout() {
   return (
     <Tabs
-      screenOptions={{ tabBarActiveTintColor: '#208AEF', headerShown: false }}
+      screenOptions={{
+        tabBarActiveTintColor: Colors.primaryContainer,
+        tabBarInactiveTintColor: Colors.onSurfaceVariant,
+        tabBarStyle: { backgroundColor: Colors.surfaceContainerLowest },
+        headerShown: false,
+      }}
     >
       <Tabs.Screen
         name="index"

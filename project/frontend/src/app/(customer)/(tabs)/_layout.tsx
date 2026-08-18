@@ -1,11 +1,17 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Colors } from '@/constants/theme';
 
 export default function CustomerLayout() {
   return (
     <Tabs
-      screenOptions={{ tabBarActiveTintColor: '#208AEF', headerShown: false }}
+      screenOptions={{
+        tabBarActiveTintColor: Colors.primaryContainer,
+        tabBarInactiveTintColor: Colors.onSurfaceVariant,
+        tabBarStyle: { backgroundColor: Colors.surfaceContainerLowest },
+        headerShown: false,
+      }}
     >
       <Tabs.Screen
         name="(home)"
@@ -17,15 +23,7 @@ export default function CustomerLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="search" size={24} color={color} />
-          ),
-        }}
-      />
+    
 
       <Tabs.Screen
         name="cart"
@@ -43,6 +41,16 @@ export default function CustomerLayout() {
           title: 'Orders',
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="local-shipping" size={24} color={color} />
+          ),
+        }}
+      />
+
+        <Tabs.Screen
+        name="message"
+        options={{
+          title: 'Message',
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="message" size={24} color={color} />
           ),
         }}
       />

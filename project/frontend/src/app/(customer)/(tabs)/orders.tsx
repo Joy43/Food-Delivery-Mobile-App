@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useOrderStore } from '@/store/order-store';
 import { Order } from '@food-delivery/types';
+import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
 
 type OrderWithRestaurant = Order & {
   restaurant: { id: string; name: string };
@@ -18,13 +19,13 @@ type OrderWithRestaurant = Order & {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: '#F59E0B',
-  CONFIRMED: '#3B82F6',
+  PENDING:   '#F59E0B',
+  CONFIRMED: Colors.secondary,
   PREPARING: '#8B5CF6',
-  READY: '#06B6D4',
-  PICKED_UP: '#FF6B35',
-  DELIVERED: '#22C55E',
-  CANCELLED: '#EF4444',
+  READY:     '#06B6D4',
+  PICKED_UP: Colors.primaryContainer,
+  DELIVERED: Colors.secondary,
+  CANCELLED: Colors.error,
 };
 
 function OrderCard({
@@ -117,30 +118,31 @@ export default function CustomerOrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 12,
+    ...Typography.headlineLGMobile,
+    color: Colors.onSurface,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm + 4,
   },
   list: {
-    padding: 16,
-    gap: 12,
+    padding: Spacing.md,
+    gap: Spacing.sm + 4,
   },
   card: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 16,
-    padding: 16,
-    gap: 6,
+    backgroundColor: Colors.surfaceContainerLow,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.xs + 2,
+    ...Shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -148,48 +150,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   restaurantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    ...Typography.labelMD,
+    color: Colors.onSurface,
   },
   statusBadge: {
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm + 2,
     paddingVertical: 3,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: Typography.fontSize.xs + 1,
+    fontWeight: Typography.fontWeight.bold,
     letterSpacing: 0.5,
   },
   date: {
-    fontSize: 13,
-    color: '#999',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.outline,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: Spacing.xs,
   },
   items: {
-    fontSize: 13,
-    color: '#777',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.onSurfaceVariant,
   },
   total: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    ...Typography.headlineMD,
+    color: Colors.onSurface,
+    marginBottom: Spacing.sm,
   },
   emptySubText: {
-    fontSize: 14,
-    color: '#999',
+    fontSize: Typography.fontSize.md,
+    color: Colors.outline,
     textAlign: 'center',
   },
 });
+

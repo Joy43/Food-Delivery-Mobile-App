@@ -13,6 +13,7 @@ import {
 import { router } from 'expo-router';
 import { useRestaurantStore } from '@/store/restaurant-store';
 import { useImageUploader } from '@/lib/uploadthing';
+import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
 
 export default function EditRestaurantScreen() {
   const { myRestaurant: restaurant, updateRestaurant, isMutating: isPending } = useRestaurantStore();
@@ -98,12 +99,14 @@ export default function EditRestaurantScreen() {
       <TextInput
         style={styles.input}
         placeholder="Restaurant name"
+        placeholderTextColor={Colors.outline}
         value={name}
         onChangeText={setName}
       />
       <TextInput
         style={styles.input}
         placeholder="Description"
+        placeholderTextColor={Colors.outline}
         value={description}
         onChangeText={setDescription}
         multiline
@@ -112,12 +115,14 @@ export default function EditRestaurantScreen() {
       <TextInput
         style={styles.input}
         placeholder="Address"
+        placeholderTextColor={Colors.outline}
         value={address}
         onChangeText={setAddress}
       />
       <TextInput
         style={styles.input}
         placeholder="Cuisine type"
+        placeholderTextColor={Colors.outline}
         value={cuisineType}
         onChangeText={setCuisineType}
       />
@@ -128,7 +133,7 @@ export default function EditRestaurantScreen() {
         disabled={isPending || isUploading}
       >
         {isPending ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={Colors.onPrimary} />
         ) : (
           <Text style={styles.buttonText}>Save Changes</Text>
         )}
@@ -140,51 +145,56 @@ export default function EditRestaurantScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#fff',
+    padding: Spacing.lg,
+    backgroundColor: Colors.background,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 24,
+    ...Typography.headlineLGMobile,
+    color: Colors.onSurface,
+    marginBottom: Spacing.lg,
   },
   imagePicker: {
     height: 180,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     overflow: 'hidden',
+    backgroundColor: Colors.surfaceContainerLow,
   },
   image: {
     width: '100%',
     height: '100%',
   },
   imagePickerText: {
-    color: '#999',
-    fontSize: 14,
+    color: Colors.onSurfaceVariant,
+    fontSize: Typography.fontSize.md,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
-    fontSize: 16,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    fontSize: Typography.fontSize.base,
+    color: Colors.onSurface,
+    backgroundColor: Colors.surfaceContainerLow,
   },
   button: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: Colors.primaryContainer,
+    borderRadius: Radius.full,
+    padding: Spacing.md,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: Spacing.sm,
+    ...Shadows.floating,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: Colors.onPrimary,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
   },
 });
+
