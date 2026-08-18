@@ -90,9 +90,9 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     status: string;
     [key: string]: unknown;
   }) {
-    // → customer watching this order
+
     this.server.to(`order:${order.id}`).emit('order:updated', order);
-    // → owner dashboard for this restaurant
+
     this.server
       .to(`restaurant:${order.restaurantId}`)
       .emit('order:updated', order);

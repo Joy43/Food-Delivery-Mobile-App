@@ -13,6 +13,7 @@ import { DriverModule } from './driver/driver.module';
 import { LocationModule } from './location/location.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CacheModule } from './cache/cache.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CacheModule } from './cache/cache.module';
     DriverModule,
     LocationModule,
     ReviewsModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

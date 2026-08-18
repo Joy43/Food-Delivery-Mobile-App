@@ -44,8 +44,6 @@ export class OrdersController {
   @Roles(UserRole.CUSTOMER, UserRole.DRIVER)
   @ApiOperation({ summary: 'Get list of orders belonging to the logged-in customer or driver' })
   @ApiResponse({ status: 200, description: 'List of user orders returned successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
   findMine(@Request() req: AuthRequest) {
     return this.ordersService.findMyOrders(req.user.sub, req.user.role);
   }
@@ -66,9 +64,7 @@ export class OrdersController {
   @Roles(UserRole.RESTAURANT_OWNER, UserRole.DRIVER)
   @ApiOperation({ summary: 'Update status of an order (e.g. prepared, delivered)' })
   @ApiResponse({ status: 200, description: 'Order status updated successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @ApiResponse({ status: 404, description: 'Order not found' })
+
   updateStatus(
     @Param('id') id: string,
     @Request() req: AuthRequest,
@@ -80,8 +76,7 @@ export class OrdersController {
   @Get(':id')
   @ApiOperation({ summary: 'Get single order details by UUID' })
   @ApiResponse({ status: 200, description: 'Order details returned successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Order not found' })
+
   findOne(@Param('id') id: string, @Request() req: AuthRequest) {
     // pass the logged-in user so the service can enforce role-based access
     return this.ordersService.findById(id, req.user);

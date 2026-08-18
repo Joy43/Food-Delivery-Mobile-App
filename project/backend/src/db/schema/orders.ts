@@ -32,6 +32,7 @@ export const orders = pgTable('orders', {
   status: orderStatusEnum('status').notNull().default('PENDING'),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
   deliveryAddress: text('delivery_address').notNull(),
+  phoneNumber: text('phone_number'),
   stripePaymentIntentId: text('stripe_payment_intent_id'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
