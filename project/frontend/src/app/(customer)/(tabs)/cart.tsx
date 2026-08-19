@@ -27,6 +27,7 @@ export default function CartScreen() {
   } = useCartStore();
   const { createOrder, isMutating: isPending } = useOrderStore();
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const cartTotal = items.reduce(
@@ -38,10 +39,13 @@ export default function CartScreen() {
     if (items.length === 0) return Alert.alert('Your cart is empty');
     if (!deliveryAddress.trim())
       return Alert.alert('Please enter your delivery address');
+    if (!phoneNumber.trim())
+      return Alert.alert('Please enter your phone number');
     try {
       const order = await createOrder({
         restaurantId,
         deliveryAddress,
+        phoneNumber,
         items: items.map((i) => ({
           menuItemId: i.id,
           quantity: String(i.quantity),
@@ -117,6 +121,16 @@ export default function CartScreen() {
               value={deliveryAddress}
               onChangeText={setDeliveryAddress}
               multiline
+            />
+
+            <Text style={styles.sectionTitle}>Phone number</Text>
+            <TextInput
+              style={styles.phoneInput}
+              placeholder="Enter your phone number"
+              placeholderTextColor={Colors.onSurfaceVariant}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
             />
 
             <View style={styles.totalRow}>
@@ -272,6 +286,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceContainerLow,
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  phoneInput: {
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    fontSize: Typography.fontSize.base,
+    color: Colors.onSurface,
+    backgroundColor: Colors.surfaceContainerLow,
+    height: 48,
   },
   totalRow: {
     flexDirection: 'row',

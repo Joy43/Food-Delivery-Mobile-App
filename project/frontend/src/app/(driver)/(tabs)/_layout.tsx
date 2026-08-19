@@ -42,6 +42,15 @@ export default function DriverLayout() {
           ),
         }}
       />
+       <Tabs.Screen
+              name="message"
+              options={{
+                title: 'Message',
+                tabBarIcon: ({ color }) => (
+                  <MaterialIcons name="message" size={24} color={color} />
+                ),
+              }}
+            />
 
       <Tabs.Screen
         name="profile"

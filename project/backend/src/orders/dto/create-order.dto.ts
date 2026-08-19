@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, ValidateNested } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { OrderItemDto } from './order-item.dto';
 
@@ -18,6 +18,14 @@ export class CreateOrderDto {
   @IsString()
   deliveryAddress!: string;
 
+  @ApiPropertyOptional({
+    description: 'Customer phone number for delivery contact',
+    example: '+1234567890',
+  })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
   @ApiProperty({
     description: 'List of items in the order',
     type: [OrderItemDto],
@@ -27,3 +35,4 @@ export class CreateOrderDto {
   @Type(() => OrderItemDto) // transforms each item into an OrderItemDto instance
   items!: OrderItemDto[];
 }
+

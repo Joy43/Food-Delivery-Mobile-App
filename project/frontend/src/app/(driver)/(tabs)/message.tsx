@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ConversationsList from '@/components/messaging/ConversationsList';
 import ChatScreen from '@/components/messaging/ChatScreen';
 
-export default function CustomerMessageScreen() {
+export default function DriverMessageScreen() {
   const [selectedConv, setSelectedConv] = useState<{
     id: string;
     title: string;

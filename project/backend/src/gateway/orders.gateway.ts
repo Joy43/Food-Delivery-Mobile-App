@@ -63,7 +63,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   emitDriverAssigned(driverId: string, order: Record<string, unknown>) {
-    this.server.to(`driver:${driverId}`).emit('driver:assigned', order);
+    this.server?.to(`driver:${driverId}`).emit('driver:assigned', order);
   }
 
   @SubscribeMessage('driver:location')
@@ -80,7 +80,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // forward to everyone in order:<orderId> room (customer tracking screen)
     this.server
-      .to(`order:${location.orderId}`)
+      ?.to(`order:${location.orderId}`)
       .emit('driver:location', location);
   }
 
@@ -91,10 +91,10 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     [key: string]: unknown;
   }) {
 
-    this.server.to(`order:${order.id}`).emit('order:updated', order);
+    this.server?.to(`order:${order.id}`).emit('order:updated', order);
 
     this.server
-      .to(`restaurant:${order.restaurantId}`)
+      ?.to(`restaurant:${order.restaurantId}`)
       .emit('order:updated', order);
   }
 }

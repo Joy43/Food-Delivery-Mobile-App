@@ -62,6 +62,7 @@ export class OrdersService {
         customerId,
         restaurantId: dto.restaurantId,
         deliveryAddress: dto.deliveryAddress,
+        phoneNumber: dto.phoneNumber ?? null,
         totalAmount: total.toFixed(2),
         status: 'PENDING',
       })
@@ -75,7 +76,7 @@ export class OrdersService {
           orderId: order.id,
           menuItemId: item.menuItemId,
           quantity: item.quantity,
-          unitPrice: menuItem.price, // snapshot the price at time of order
+          unitPrice: menuItem.price, 
         };
       }),
     );

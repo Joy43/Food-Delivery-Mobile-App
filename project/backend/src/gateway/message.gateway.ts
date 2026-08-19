@@ -145,23 +145,23 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
   emitNewMessage(conversationId: string, messageData: Record<string, unknown>) {
     this.server
-      .to(`conversation:${conversationId}`)
+      ?.to(`conversation:${conversationId}`)
       .emit('message:new', messageData);
   }
 
   emitMessageUpdate(conversationId: string, messageData: Record<string, unknown>) {
     this.server
-      .to(`conversation:${conversationId}`)
+      ?.to(`conversation:${conversationId}`)
       .emit('message:updated', messageData);
   }
 
   emitMessageDeleted(conversationId: string, messageId: string) {
     this.server
-      .to(`conversation:${conversationId}`)
+      ?.to(`conversation:${conversationId}`)
       .emit('message:deleted', { conversationId, messageId });
   }
 
   emitUserNotification(userId: string, notificationData: Record<string, unknown>) {
-    this.server.to(`user:${userId}`).emit('notification:new', notificationData);
+    this.server?.to(`user:${userId}`).emit('notification:new', notificationData);
   }
 }
