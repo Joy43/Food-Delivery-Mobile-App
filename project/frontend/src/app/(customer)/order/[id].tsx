@@ -196,23 +196,35 @@ export default function OrderConfirmationScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.content}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header Hero Section */}
+        <View style={styles.heroCard}>
           <Text style={styles.emoji}>
-            {order?.status === 'CONFIRMED' ? '✅' : '🎉'}
+            {order?.status === 'CONFIRMED' ? '✅' : order?.status === 'DELIVERED' ? '🎉' : '🛍️'}
           </Text>
           <Text style={styles.title}>
             {order?.status === 'CONFIRMED'
               ? 'Order Confirmed!'
+              : order?.status === 'DELIVERED'
+              ? 'Order Delivered!'
               : 'Order Placed!'}
           </Text>
           <Text style={styles.subtitle}>
             {order?.status === 'CONFIRMED'
               ? 'Your payment was successful'
+              : order?.status === 'DELIVERED'
+              ? 'Enjoy your meal!'
               : 'Complete your payment below'}
           </Text>
-          <View style={styles.orderListSection}>
-            <Text style={styles.orderListTitle}>Your Order</Text>
+        </View>
+
+        {/* Your Order Items Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardHeaderTitle}>Your Order</Text>
+          <View style={styles.itemsList}>
             {order?.items?.map((item) => (
               <View key={item.id} style={styles.itemRow}>
                 <Image 
@@ -230,96 +242,51 @@ export default function OrderConfirmationScreen() {
               </View>
             ))}
           </View>
+        </View>
 
-          <View style={styles.card}>
-            <Text style={styles.label}>Order ID</Text>
+        {/* Order Info Breakdown Card */}
+        <View style={styles.card}>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>ORDER ID</Text>
             <Text style={styles.value}>
-              {order?.id.slice(0, 8).toUpperCase()}
-            </Text>
-
-            <Text style={styles.label}>Total</Text>
-            <Text style={styles.value}>${order?.totalAmount}</Text>
-
-            <Text style={styles.label}>Delivery to</Text>
-            <Text style={styles.value}>{order?.deliveryAddress}</Text>
-
-            <Text style={styles.label}>Status</Text>
-            <Text
-              style={[
-                styles.statusBadge,
-                order?.status === 'CONFIRMED'
-                  ? styles.confirmed
-                  : styles.pending,
-              ]}
-            >
-              {order?.status}
+              {order?.id?.slice(0, 8)?.toUpperCase()}
             </Text>
           </View>
 
-          {order?.status === 'PENDING' && (
-            <Pressable
-              style={styles.payButton}
-              onPress={() => {
-                void handlePayment();
-              }}
-              disabled={paymentLoading}
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>TOTAL</Text>
+            <Text style={styles.value}>${order?.totalAmount}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>DELIVERY TO</Text>
+            <Text style={styles.value}>{order?.deliveryAddress}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>STATUS</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                order?.status === 'CONFIRMED' || order?.status === 'DELIVERED'
+                  ? styles.confirmed
+                  : order?.status === 'CANCELLED'
+                  ? styles.cancelledBadge
+                  : styles.pending,
+              ]}
             >
-              {paymentLoading ? (
-                <ActivityIndicator color={Colors.onPrimary} />
-              ) : (
-                <Text style={styles.payButtonText}>
-                  Pay ${order?.totalAmount}
-                </Text>
-              )}
-            </Pressable>
-          )}
-
-          {order?.status !== 'PENDING' && order?.status !== 'CANCELLED' && (
-            <View style={styles.tracker}>
-              <Text style={styles.trackerTitle}>Live Tracking</Text>
-              {STATUS_STEPS.map((step, index) => {
-                const isCompleted = index < currentIndex;
-                const isActive = index === currentIndex;
-                const isLast = index === STATUS_STEPS.length - 1;
-                return (
-                  <View key={step.key} style={styles.step}>
-                    <View style={styles.stepLeft}>
-                      <View
-                        style={[
-                          styles.stepCircle,
-                          isCompleted && styles.stepCircleCompleted,
-                          isActive && styles.stepCircleActive,
-                        ]}
-                      >
-                        <Text style={styles.stepIcon}>
-                          {isCompleted ? step.icon : '○'}
-                        </Text>
-                      </View>
-                      {!isLast && (
-                        <View
-                          style={[
-                            styles.stepLine,
-                            isCompleted && styles.stepLineCompleted,
-                          ]}
-                        />
-                      )}
-                    </View>
-                    <Text
-                      style={[
-                        styles.stepLabel,
-                        isCompleted && styles.stepLabelCompleted,
-                        isActive && styles.stepLabelActive,
-                      ]}
-                    >
-                      {step.label}
-                    </Text>
-                  </View>
-                );
-              })}
+              <Text style={styles.statusBadgeText}>{order?.status}</Text>
             </View>
-          )}
+          </View>
+        </View>
 
-          {showMap && (
+        {/* Live Map Tracking View */}
+        {showMap && (
+          <View style={styles.card}>
+            <View style={styles.mapHeaderRow}>
+              <Text style={styles.cardHeaderTitle}>🛵 Live Driver Location</Text>
+              <Text style={styles.mapLiveTag}>LIVE</Text>
+            </View>
             <MapView
               style={styles.map}
               provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
@@ -338,24 +305,104 @@ export default function OrderConfirmationScreen() {
                 title="Driver"
                 description="Your driver is on the way!"
               >
-                <Text style={styles.driverPin}>🛵</Text>
+                <View style={styles.driverMarker}>
+                  <Text style={styles.driverPin}>🛵</Text>
+                </View>
               </Marker>
             </MapView>
-          )}
+          </View>
+        )}
 
-          {order?.status === 'CANCELLED' && (
-            <View style={styles.cancelledBox}>
-              <Text style={styles.cancelledText}>This order was cancelled</Text>
+        {/* Live Tracking Status Steps */}
+        {order?.status !== 'PENDING' && order?.status !== 'CANCELLED' && (
+          <View style={styles.card}>
+            <Text style={styles.cardHeaderTitle}>Live Tracking</Text>
+            <View style={styles.trackerList}>
+              {STATUS_STEPS.map((step, index) => {
+                const isCompleted = index < currentIndex;
+                const isActive = index === currentIndex;
+                const isLast = index === STATUS_STEPS.length - 1;
+                return (
+                  <View key={step.key} style={styles.step}>
+                    <View style={styles.stepLeft}>
+                      <View
+                        style={[
+                          styles.stepCircle,
+                          isCompleted && styles.stepCircleCompleted,
+                          isActive && styles.stepCircleActive,
+                        ]}
+                      >
+                        <Text style={styles.stepIcon}>
+                          {isCompleted ? step.icon : isActive ? step.icon : '○'}
+                        </Text>
+                      </View>
+                      {!isLast && (
+                        <View
+                          style={[
+                            styles.stepLine,
+                            isCompleted && styles.stepLineCompleted,
+                          ]}
+                        />
+                      )}
+                    </View>
+                    <View style={styles.stepContent}>
+                      <Text
+                        style={[
+                          styles.stepLabel,
+                          isCompleted && styles.stepLabelCompleted,
+                          isActive && styles.stepLabelActive,
+                        ]}
+                      >
+                        {step.label}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          )}
+          </View>
+        )}
 
+        {/* Cancelled Box */}
+        {order?.status === 'CANCELLED' && (
+          <View style={styles.cancelledBox}>
+            <Text style={styles.cancelledText}>This order was cancelled</Text>
+          </View>
+        )}
+
+        {/* Action Button for Pending Payment */}
+        {order?.status === 'PENDING' && (
           <Pressable
-            style={styles.homeButton}
-            onPress={() => router.replace('/(customer)/(tabs)/(home)')}
+            style={({ pressed }) => [
+              styles.payButton,
+              pressed && styles.buttonPressed,
+              paymentLoading && styles.buttonDisabled,
+            ]}
+            onPress={() => {
+              void handlePayment();
+            }}
+            disabled={paymentLoading}
           >
-            <Text style={styles.homeButtonText}>Back to Home</Text>
+            {paymentLoading ? (
+              <ActivityIndicator color={Colors.onPrimary} />
+            ) : (
+              <Text style={styles.payButtonText}>
+                Pay ${order?.totalAmount}
+              </Text>
+            )}
           </Pressable>
-        </View>
+        )}
+
+        {/* Home Navigation Button */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.homeButton,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => router.replace('/(customer)/(tabs)/(home)')}
+        >
+          <Text style={styles.homeButtonText}>Back to Home</Text>
+        </Pressable>
 
         {showRatingModal && (
           <RatingModal
@@ -385,10 +432,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: Spacing.lg,
   },
-  content: {
+  scrollContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xl + 20,
+    gap: Spacing.md,
+  },
+  heroCard: {
     alignItems: 'center',
-    padding: Spacing.md,
-    paddingBottom: 40,
+    paddingVertical: Spacing.md,
   },
   emoji: {
     fontSize: 56,
@@ -405,27 +457,28 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.base,
     color: Colors.onSurfaceVariant,
     textAlign: 'center',
-    marginTop: Spacing.xs,
-    marginBottom: Spacing.lg,
+    marginTop: 4,
   },
-  orderListSection: {
-    width: '100%',
+  card: {
+    alignSelf: 'stretch',
     backgroundColor: Colors.surfaceContainerLowest,
     borderRadius: Radius.xl,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
     ...Shadows.card,
   },
-  orderListTitle: {
-    ...Typography.headlineMD,
+  cardHeaderTitle: {
     fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
     color: Colors.onSurface,
-    marginBottom: Spacing.sm + 4,
+    marginBottom: Spacing.sm,
+  },
+  itemsList: {
+    marginTop: Spacing.xs,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.sm + 2,
+    paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.outlineVariant,
   },
@@ -433,7 +486,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: Radius.md,
-    marginRight: Spacing.sm + 4,
+    marginRight: Spacing.md,
     backgroundColor: Colors.surfaceContainerLow,
   },
   itemInfo: {
@@ -445,7 +498,7 @@ const styles = StyleSheet.create({
     color: Colors.onSurface,
   },
   itemSubtitle: {
-    fontSize: Typography.fontSize.sm,
+    fontSize: Typography.fontSize.xs + 1,
     color: Colors.outline,
     marginTop: 2,
   },
@@ -454,103 +507,79 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.onSurface,
   },
-  card: {
-    width: '100%',
-    backgroundColor: Colors.surfaceContainerLowest,
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    ...Shadows.card,
+  infoRow: {
+    marginVertical: Spacing.xs + 2,
   },
   label: {
-    fontSize: Typography.fontSize.xs + 1,
+    fontSize: Typography.fontSize.xs,
     color: Colors.onSurfaceVariant,
-    fontWeight: Typography.fontWeight.semibold,
-    marginTop: Spacing.sm + 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.8,
+    marginBottom: 2,
   },
   value: {
     fontSize: Typography.fontSize.base,
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.onSurface,
-    marginTop: Spacing.xs,
   },
   statusBadge: {
-    fontSize: Typography.fontSize.sm,
-    fontWeight: Typography.fontWeight.bold,
-    marginTop: Spacing.xs + 2,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.sm + 4,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs + 2,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.full,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  statusBadgeText: {
+    fontSize: Typography.fontSize.xs + 1,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   confirmed: {
     backgroundColor: Colors.secondaryContainer,
-    color: Colors.onSecondaryContainer,
   },
   pending: {
     backgroundColor: Colors.tertiaryFixed,
-    color: Colors.onTertiaryFixed,
   },
-  payButton: {
-    backgroundColor: Colors.primaryContainer,
-    borderRadius: Radius.xl,
-    padding: 18,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-    ...Shadows.floating,
-  },
-  payButtonText: {
-    color: Colors.onPrimary,
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-  },
-  homeButton: {
-    borderRadius: Radius.xl,
-    padding: 18,
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: Colors.surfaceContainerLowest,
-    borderWidth: 1.5,
-    borderColor: Colors.outlineVariant,
-    marginTop: Spacing.sm + 2,
-  },
-  homeButtonText: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.onSurface,
-  },
-  trackerTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    marginBottom: Spacing.lg,
-    color: Colors.onSurface,
-  },
-  cancelledBox: {
+  cancelledBadge: {
     backgroundColor: Colors.errorContainer,
-    borderWidth: 1,
-    borderColor: Colors.onErrorContainer,
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
+  },
+  mapHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
-    width: '100%',
+    marginBottom: Spacing.sm,
   },
-  cancelledText: {
-    fontSize: Typography.fontSize.base,
+  mapLiveTag: {
+    fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.bold,
-    color: Colors.onErrorContainer,
+    color: '#059669',
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+    overflow: 'hidden',
   },
-  tracker: {
-    backgroundColor: Colors.surfaceContainerLowest,
-    borderRadius: Radius.xl,
-    padding: Spacing.lg,
+  map: {
     width: '100%',
-    marginBottom: Spacing.lg,
+    height: 240,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  driverMarker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surfaceContainerLowest,
+    alignItems: 'center',
+    justifyContent: 'center',
     ...Shadows.card,
+  },
+  driverPin: {
+    fontSize: 24,
+  },
+  trackerList: {
+    marginTop: Spacing.xs,
   },
   step: {
     flexDirection: 'row',
@@ -561,9 +590,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: Colors.surfaceContainerLow,
     alignItems: 'center',
     justifyContent: 'center',
@@ -575,21 +604,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryContainer,
   },
   stepIcon: {
-    fontSize: 18,
+    fontSize: 16,
   },
   stepLine: {
     width: 2,
-    height: 36,
+    height: 28,
     backgroundColor: Colors.outlineVariant,
-    marginVertical: Spacing.xs,
+    marginVertical: 2,
   },
   stepLineCompleted: {
     backgroundColor: Colors.secondary,
   },
+  stepContent: {
+    flex: 1,
+    paddingTop: 6,
+  },
   stepLabel: {
-    fontSize: Typography.fontSize.base,
+    fontSize: Typography.fontSize.sm,
     color: Colors.outline,
-    paddingTop: Spacing.sm + 4,
     fontWeight: Typography.fontWeight.medium,
   },
   stepLabelActive: {
@@ -600,14 +632,51 @@ const styles = StyleSheet.create({
     color: Colors.onSurface,
     fontWeight: Typography.fontWeight.semibold,
   },
-  map: {
-    width: '100%',
-    height: 240,
+  cancelledBox: {
+    backgroundColor: Colors.errorContainer,
     borderRadius: Radius.xl,
-    marginBottom: Spacing.lg,
-    overflow: 'hidden',
+    padding: Spacing.lg,
+    alignItems: 'center',
+    alignSelf: 'stretch',
   },
-  driverPin: {
-    fontSize: 32,
+  cancelledText: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onErrorContainer,
+  },
+  payButton: {
+    backgroundColor: Colors.primaryContainer,
+    borderRadius: Radius.full,
+    paddingVertical: 18,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.floating,
+  },
+  payButtonText: {
+    color: Colors.onPrimary,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  homeButton: {
+    borderRadius: Radius.full,
+    paddingVertical: 16,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceContainerLowest,
+    borderWidth: 1.5,
+    borderColor: Colors.outlineVariant,
+  },
+  homeButtonText: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.onSurface,
+  },
+  buttonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

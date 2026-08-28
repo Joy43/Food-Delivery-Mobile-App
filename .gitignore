@@ -7,3 +7,6 @@ package-lock.json
 .DS_Store
 .cursor/
 yarn.lock
+# generated native folders
+/ios
+/android

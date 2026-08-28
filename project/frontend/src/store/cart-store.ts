@@ -3,7 +3,7 @@ import { CartItem } from '@food-delivery/types';
 
 interface CartStore {
   items: CartItem[];
-  restaurantId: string | null; // tracks which restaurant the cart belongs to
+  restaurantId: string | null; 
   restaurantName: string | null;
 
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
@@ -63,7 +63,6 @@ export const useCartStore = create<CartStore>((set, get) => ({
     if (!item) return;
 
     if (item.quantity === 1) {
-      // remove item when quantity reaches 0
       set({ items: items.filter((i) => i.id !== id) });
     } else {
       set({

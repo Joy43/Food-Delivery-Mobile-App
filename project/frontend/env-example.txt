@@ -10,3 +10,4 @@ EXPO_PUBLIC_SERVER_URL="http://[IP_ADDRESS]"
 
 # Stripe publishable key
 EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY="[ENCRYPTION_KEY]"
+ngrok http --url=ruling-kitten-evolved.ngrok-free.app 80
