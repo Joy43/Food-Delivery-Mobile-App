@@ -26,7 +26,13 @@ export default function DriverActiveScreen() {
   const socketRef = useRef<Socket | null>(null);
   const locationWatchRef = useRef<Location.LocationSubscription | null>(null);
 
-  const { driverActiveOrders, isLoading, fetchDriverActiveOrders, updateOrderStatus, isMutating: isPending } = useOrderStore();
+  const {
+    driverActiveOrders,
+    isLoading,
+    fetchDriverActiveOrders,
+    updateOrderStatus,
+    isMutating: isPending,
+  } = useOrderStore();
 
   useEffect(() => {
     fetchDriverActiveOrders();
@@ -40,9 +46,28 @@ export default function DriverActiveScreen() {
       stopTracking();
       await fetchDriverActiveOrders();
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Something went wrong',
+      );
     }
   }
+
+  const { router } = require('expo-router');
+  const { Ionicons } = require('@expo/vector-icons');
+  const { Image } = require('react-native');
+
+  const handleMessageUser = async (recipientId: string) => {
+    try {
+      await api.post('/messages/conversations', {
+        type: 'DIRECT',
+        recipientId,
+      });
+      router.push(`/(driver)/(tabs)/message`);
+    } catch (e: any) {
+      Alert.alert('Error', 'Could not open conversation');
+    }
+  };
 
   // request permission, connect socket, start GPS watch
   async function startTracking(orderId: string) {
@@ -128,14 +153,152 @@ export default function DriverActiveScreen() {
             #{activeOrder.id.slice(0, 8).toUpperCase()}
           </Text>
 
-          <Text style={styles.label}>Deliver to</Text>
-          <Text style={styles.value}>{activeOrder.deliveryAddress}</Text>
-
           <Text style={styles.label}>Status</Text>
           <Text style={[styles.value, styles.status]}>
             {activeOrder.status}
           </Text>
         </View>
+
+        {activeOrder.restaurant && activeOrder.restaurant.owner && (
+          <View
+            style={[
+              styles.card,
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
+            ]}
+          >
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+            >
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  overflow: 'hidden',
+                  marginRight: 12,
+                }}
+              >
+                <Image
+                  source={{
+                    uri:
+                      activeOrder.restaurant.imageUrl ||
+                      'https://placehold.co/100x100.png',
+                  }}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Rubik-Bold',
+                    fontSize: 16,
+                    color: '#1A1A1A',
+                  }}
+                >
+                  {activeOrder.restaurant.name}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Rubik-Regular',
+                    fontSize: 12,
+                    color: '#888',
+                  }}
+                >
+                  Restaurant
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              style={{
+                padding: 10,
+                backgroundColor: '#06B6D420',
+                borderRadius: 20,
+              }}
+              onPress={() =>
+                handleMessageUser(activeOrder.restaurant!.owner!.id)
+              }
+            >
+              <Ionicons name="chatbubble-ellipses" size={20} color="#06B6D4" />
+            </Pressable>
+          </View>
+        )}
+
+        {activeOrder.customer && (
+          <View
+            style={[
+              styles.card,
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
+            ]}
+          >
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+            >
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: '#FF6B3520',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12,
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>👤</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Rubik-Bold',
+                    fontSize: 16,
+                    color: '#1A1A1A',
+                  }}
+                >
+                  {activeOrder.customer.firstName}{' '}
+                  {activeOrder.customer.lastName}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Rubik-Regular',
+                    fontSize: 12,
+                    color: '#FF6B35',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Customer
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Rubik-Regular',
+                    fontSize: 12,
+                    color: '#888',
+                  }}
+                  numberOfLines={1}
+                >
+                  {activeOrder.deliveryAddress}
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              style={{
+                padding: 10,
+                backgroundColor: '#FF6B3520',
+                borderRadius: 20,
+              }}
+              onPress={() => handleMessageUser(activeOrder.customer!.id)}
+            >
+              <Ionicons name="chatbubble-ellipses" size={20} color="#FF6B35" />
+            </Pressable>
+          </View>
+        )}
 
         <View style={styles.trackingBadge}>
           <Text style={styles.trackingText}>📡 Broadcasting location...</Text>
@@ -165,7 +328,13 @@ export default function DriverActiveScreen() {
   );
 }
 
-import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
+import {
+  Colors,
+  Spacing,
+  Radius,
+  Shadows,
+  Typography,
+} from '@/constants/theme';
 
 const styles = StyleSheet.create({
   container: {

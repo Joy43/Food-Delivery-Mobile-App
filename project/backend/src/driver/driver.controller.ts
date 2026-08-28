@@ -45,5 +45,10 @@ export class DriverController {
   declineOrder(@Param('id') id: string, @Request() req: AuthRequest) {
     return this.driverService.declineOrder(id, req.user.sub);
   }
-  
+  @Post('orders/:id/accept')
+  @ApiOperation({ summary: 'Accept a delivery order offer' })
+  @ApiResponse({ status: 201, description: 'Order accepted successfully' })
+  acceptOrder(@Param('id') id: string, @Request() req: AuthRequest) {
+    return this.driverService.acceptOrder(id, req.user.sub);
+  }
 }

@@ -118,22 +118,8 @@ export class OrdersService {
 
     if (!canView) throw new NotFoundException('Order not found');
 
-    const items = await this.db
-      .select({
-        id: schema.orderItems.id,
-        orderId: schema.orderItems.orderId,
-        menuItemId: schema.orderItems.menuItemId,
-        quantity: schema.orderItems.quantity,
-        price: schema.orderItems.unitPrice,
-        name: schema.menuItems.name,
-        image: schema.menuItems.imageUrl,
-        description: schema.menuItems.description,
-      })
-      .from(schema.orderItems)
-      .leftJoin(schema.menuItems, eq(schema.orderItems.menuItemId, schema.menuItems.id))
-      .where(eq(schema.orderItems.orderId, id));
-
-    return { ...order, items };
+    const [enrichedOrder] = await this.enrichOrders([order]);
+    return enrichedOrder;
   }
 
   async findByRestaurant(ownerId: string) {
@@ -195,6 +181,42 @@ export class OrdersService {
     return updated;
   }
 
+  async requestDriver(orderId: string, ownerId: string) {
+    const [order] = await this.db
+      .select()
+      .from(schema.orders)
+      .where(eq(schema.orders.id, orderId));
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (order.status !== 'PREPARING' && order.status !== 'READY') {
+      throw new BadRequestException('Order must be PREPARING or READY to request a driver');
+    }
+
+    const [restaurant] = await this.db
+      .select()
+      .from(schema.restaurants)
+      .where(eq(schema.restaurants.ownerId, ownerId));
+
+    if (!restaurant || restaurant.id !== order.restaurantId) {
+      throw new ForbiddenException('This order does not belong to your restaurant');
+    }
+
+    // Call DriverService to assign/broadcast
+    await this.driverService.assignDriver(orderId);
+
+    // Fetch the updated order (it may have driverId set now if assigned instantly)
+    const [updatedOrder] = await this.db
+      .select()
+      .from(schema.orders)
+      .where(eq(schema.orders.id, orderId));
+
+    this.ordersGateway.emitOrderUpdate(updatedOrder);
+
+    const [enriched] = await this.enrichOrders([updatedOrder]);
+    return enriched;
+  }
+
   private validateTransition(
     currentStatus: string,
     newStatus: string,
@@ -244,9 +266,34 @@ export class OrdersService {
       .select({
         id: schema.restaurants.id,
         name: schema.restaurants.name,
+        address: schema.restaurants.address,
+        imageUrl: schema.restaurants.imageUrl,
+        ownerId: schema.restaurants.ownerId,
       })
       .from(schema.restaurants)
       .where(inArray(schema.restaurants.id, restaurantIds));
+
+    const allUserIds = [
+      ...new Set([
+        ...orderRows.map((o) => o.customerId),
+        ...orderRows.map((o) => o.driverId).filter(Boolean),
+        ...restaurants.map((r) => r.ownerId),
+      ]),
+    ] as string[];
+
+    let users: any[] = [];
+    if (allUserIds.length > 0) {
+      users = await this.db
+        .select({
+          id: schema.users.id,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+          avatarUrl: schema.users.avatarUrl,
+          isOnline: schema.users.isOnline,
+        })
+        .from(schema.users)
+        .where(inArray(schema.users.id, allUserIds));
+    }
 
     const items = await this.db
       .select({
@@ -263,11 +310,19 @@ export class OrdersService {
       .leftJoin(schema.menuItems, eq(schema.orderItems.menuItemId, schema.menuItems.id))
       .where(inArray(schema.orderItems.orderId, orderIds));
 
-    const restaurantMap = Object.fromEntries(restaurants.map((r) => [r.id, r]));
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
+    const restaurantMap = Object.fromEntries(
+      restaurants.map((r) => [
+        r.id,
+        { ...r, owner: userMap[r.ownerId] },
+      ])
+    );
 
     return orderRows.map((order) => ({
       ...order,
       restaurant: restaurantMap[order.restaurantId],
+      customer: userMap[order.customerId],
+      driver: order.driverId ? userMap[order.driverId] : null,
       items: items.filter((i) => i.orderId === order.id),
     }));
   }

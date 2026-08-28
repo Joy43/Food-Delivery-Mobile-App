@@ -22,7 +22,13 @@ import {
   useDriverLocationSocket,
 } from '@/hooks/use-order-socket';
 import { RatingModal } from '@/components/rating-modal';
-import { Colors, Spacing, Radius, Shadows, Typography } from '@/constants/theme';
+import {
+  Colors,
+  Spacing,
+  Radius,
+  Shadows,
+  Typography,
+} from '@/constants/theme';
 
 const STATUS_STEPS = [
   { key: 'CONFIRMED', label: 'Order Confirmed', icon: '✅' },
@@ -44,7 +50,11 @@ export default function OrderConfirmationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const orderUpdate = useOrderSocket(id ?? null);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const { currentOrder: storeOrder, fetchOrderById, isLoading } = useOrderStore();
+  const {
+    currentOrder: storeOrder,
+    fetchOrderById,
+    isLoading,
+  } = useOrderStore();
   const order = storeOrder as (Order & { items: any[] }) | null;
 
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -196,28 +206,32 @@ export default function OrderConfirmationScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header Hero Section */}
         <View style={styles.heroCard}>
           <Text style={styles.emoji}>
-            {order?.status === 'CONFIRMED' ? '✅' : order?.status === 'DELIVERED' ? '🎉' : '🛍️'}
+            {order?.status === 'CONFIRMED'
+              ? '✅'
+              : order?.status === 'DELIVERED'
+                ? '🎉'
+                : '🛍️'}
           </Text>
           <Text style={styles.title}>
             {order?.status === 'CONFIRMED'
               ? 'Order Confirmed!'
               : order?.status === 'DELIVERED'
-              ? 'Order Delivered!'
-              : 'Order Placed!'}
+                ? 'Order Delivered!'
+                : 'Order Placed!'}
           </Text>
           <Text style={styles.subtitle}>
             {order?.status === 'CONFIRMED'
               ? 'Your payment was successful'
               : order?.status === 'DELIVERED'
-              ? 'Enjoy your meal!'
-              : 'Complete your payment below'}
+                ? 'Enjoy your meal!'
+                : 'Complete your payment below'}
           </Text>
         </View>
 
@@ -227,15 +241,19 @@ export default function OrderConfirmationScreen() {
           <View style={styles.itemsList}>
             {order?.items?.map((item) => (
               <View key={item.id} style={styles.itemRow}>
-                <Image 
-                  source={{ uri: item.image || 'https://placehold.co/150x150.png' }} 
-                  style={styles.itemImage} 
+                <Image
+                  source={{
+                    uri: item.image || 'https://placehold.co/150x150.png',
+                  }}
+                  style={styles.itemImage}
                   resizeMode="cover"
                 />
-                
+
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemName}>{item.name}</Text>
-                  <Text style={styles.itemSubtitle}>{item.description || 'Standard'}</Text>
+                  <Text style={styles.itemSubtitle}>
+                    {item.description || 'Standard'}
+                  </Text>
                 </View>
 
                 <Text style={styles.itemPrice}>${item.price}</Text>
@@ -271,8 +289,8 @@ export default function OrderConfirmationScreen() {
                 order?.status === 'CONFIRMED' || order?.status === 'DELIVERED'
                   ? styles.confirmed
                   : order?.status === 'CANCELLED'
-                  ? styles.cancelledBadge
-                  : styles.pending,
+                    ? styles.cancelledBadge
+                    : styles.pending,
               ]}
             >
               <Text style={styles.statusBadgeText}>{order?.status}</Text>
@@ -284,7 +302,9 @@ export default function OrderConfirmationScreen() {
         {showMap && (
           <View style={styles.card}>
             <View style={styles.mapHeaderRow}>
-              <Text style={styles.cardHeaderTitle}>🛵 Live Driver Location</Text>
+              <Text style={styles.cardHeaderTitle}>
+                🛵 Live Driver Location
+              </Text>
               <Text style={styles.mapLiveTag}>LIVE</Text>
             </View>
             <MapView

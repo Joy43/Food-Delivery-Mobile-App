@@ -73,6 +73,15 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, dto.status, req.user);
   }
 
+  @Post(':id/request-driver')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.RESTAURANT_OWNER)
+  @ApiOperation({ summary: 'Request a driver for an order' })
+  @ApiResponse({ status: 200, description: 'Driver requested successfully' })
+  requestDriver(@Param('id') id: string, @Request() req: AuthRequest) {
+    return this.ordersService.requestDriver(id, req.user.sub);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get single order details by UUID' })
   @ApiResponse({ status: 200, description: 'Order details returned successfully' })

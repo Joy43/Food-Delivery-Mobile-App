@@ -66,30 +66,47 @@ export class DriverService {
     // push to driver:<driverId> room — driver app shows incoming order modal
     this.ordersGateway.emitDriverAssigned(driver.id, updatedOrder);
 
-    // Auto-create a DIRECT conversation between driver and restaurant owner
-    await this.createDriverOwnerConversation(driver.id, updatedOrder.restaurantId);
-
     return updatedOrder;
   }
 
-  /**
-   * Creates a DIRECT conversation between driver and restaurant owner
-   * if one doesn't already exist.
-   */
-  private async createDriverOwnerConversation(driverId: string, restaurantId: string) {
+  async acceptOrder(orderId: string, driverId: string) {
+    const [order] = await this.db
+      .select()
+      .from(schema.orders)
+      .where(eq(schema.orders.id, orderId));
+
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.driverId !== driverId) {
+      throw new NotFoundException('Order not assigned to you');
+    }
+
+    const [updatedOrder] = await this.db
+      .update(schema.orders)
+      .set({ status: 'READY', updatedAt: new Date() }) // or keep it as is, or PICKED_UP based on flow
+      .where(eq(schema.orders.id, orderId))
+      .returning();
+
+    // Auto-create conversations
+    await this.createConversationBetween(driverId, order.customerId);
+    
+    // Find restaurant owner
+    const [restaurant] = await this.db
+      .select()
+      .from(schema.restaurants)
+      .where(eq(schema.restaurants.id, order.restaurantId));
+    if (restaurant) {
+      await this.createConversationBetween(driverId, restaurant.ownerId);
+    }
+
+    this.ordersGateway.emitOrderUpdate(updatedOrder);
+    return updatedOrder;
+  }
+
+  private async createConversationBetween(user1Id: string, user2Id: string) {
     try {
-      // Find the restaurant owner
-      const [restaurant] = await this.db
-        .select()
-        .from(schema.restaurants)
-        .where(eq(schema.restaurants.id, restaurantId));
+      if (user1Id === user2Id) return; // Prevent self-conversation
 
-      if (!restaurant) return;
-
-      const ownerId = restaurant.ownerId;
-
-      // Check if a DIRECT conversation already exists between them
-      const driverConvs = await this.db
+      const existingConvs = await this.db
         .select({ conversationId: schema.conversationParticipant.conversationId })
         .from(schema.conversationParticipant)
         .innerJoin(
@@ -98,13 +115,13 @@ export class DriverService {
         )
         .where(
           and(
-            eq(schema.conversationParticipant.userId, driverId),
+            eq(schema.conversationParticipant.userId, user1Id),
             eq(schema.conversation.type, 'DIRECT'),
             isNull(schema.conversationParticipant.leftAt),
           ),
         );
 
-      const convIds = driverConvs.map((c) => c.conversationId);
+      const convIds = existingConvs.map((c) => c.conversationId);
 
       if (convIds.length > 0) {
         const [existing] = await this.db
@@ -113,15 +130,12 @@ export class DriverService {
           .where(
             and(
               inArray(schema.conversationParticipant.conversationId, convIds),
-              eq(schema.conversationParticipant.userId, ownerId),
+              eq(schema.conversationParticipant.userId, user2Id),
               isNull(schema.conversationParticipant.leftAt),
             ),
           );
 
-        if (existing) {
-         
-          return;
-        }
+        if (existing) return; // Already exists
       }
 
       // Create new DIRECT conversation
@@ -133,13 +147,13 @@ export class DriverService {
       await this.db
         .insert(schema.conversationParticipant)
         .values([
-          { conversationId: newConv.id, userId: driverId, isAdmin: false },
-          { conversationId: newConv.id, userId: ownerId, isAdmin: false },
+          { conversationId: newConv.id, userId: user1Id, isAdmin: false },
+          { conversationId: newConv.id, userId: user2Id, isAdmin: false },
         ]);
 
-      console.log(`[DriverService] Created conversation ${newConv.id} between driver ${driverId} and owner ${ownerId}`);
+      console.log(`[DriverService] Created conversation ${newConv.id} between ${user1Id} and ${user2Id}`);
     } catch (err) {
-      console.error('[DriverService] Failed to create driver-owner conversation:', err);
+      console.error('[DriverService] Failed to create direct conversation:', err);
     }
   }
 

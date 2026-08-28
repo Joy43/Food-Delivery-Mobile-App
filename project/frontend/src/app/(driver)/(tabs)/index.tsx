@@ -43,7 +43,10 @@ export default function DriverHomeScreen() {
       await api.patch('/driver/online');
       setIsOnline((prev) => !prev);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Could not toggle status');
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Could not toggle status',
+      );
     } finally {
       setToggling(false);
     }
@@ -54,7 +57,10 @@ export default function DriverHomeScreen() {
       await api.post(`/driver/orders/${orderId}/decline`);
       setIncomingOrder(null);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Something went wrong',
+      );
     }
   }
 
@@ -64,7 +70,10 @@ export default function DriverHomeScreen() {
       setIncomingOrder(null);
       await fetchDriverActiveOrders();
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Something went wrong');
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Something went wrong',
+      );
     }
   }
 
@@ -90,7 +99,10 @@ export default function DriverHomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-bg-app" edges={['top']}>
+      <SafeAreaView
+        className="flex-1 items-center justify-center bg-bg-app"
+        edges={['top']}
+      >
         <ActivityIndicator size="large" color="#FF6B35" />
       </SafeAreaView>
     );
@@ -163,7 +175,9 @@ export default function DriverHomeScreen() {
                   if (incomingOrder) handleAcceptOrder(incomingOrder.id);
                 }}
               >
-                <Text className="text-white text-title-sm font-bold font-rubik">Accept Delivery</Text>
+                <Text className="text-white text-title-sm font-bold font-rubik">
+                  Accept Delivery
+                </Text>
               </Pressable>
 
               <Pressable
@@ -172,7 +186,9 @@ export default function DriverHomeScreen() {
                   if (incomingOrder) handleDeclineOrder(incomingOrder.id);
                 }}
               >
-                <Text className="text-error text-title-sm font-bold font-rubik">Decline</Text>
+                <Text className="text-error text-title-sm font-bold font-rubik">
+                  Decline
+                </Text>
               </Pressable>
             </View>
           </View>

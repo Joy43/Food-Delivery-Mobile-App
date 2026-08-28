@@ -14,7 +14,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, login: storeLogin, register: storeRegister, logout: storeLogout, fetchMe, clearUser } = useAuthStore();
+  const {
+    user,
+    login: storeLogin,
+    register: storeRegister,
+    logout: storeLogout,
+    fetchMe,
+    clearUser,
+  } = useAuthStore();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
@@ -48,7 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading: isInitializing, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading: isInitializing, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

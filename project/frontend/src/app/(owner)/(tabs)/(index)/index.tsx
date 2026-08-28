@@ -38,7 +38,7 @@ const TAB_BAR_OFFSET = 88;
 export default function OwnerHomeScreen() {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
-  const {user}=useAuth();
+  const { user } = useAuth();
   const {
     myRestaurant: restaurant,
     isLoading: restaurantLoading,
@@ -58,9 +58,9 @@ export default function OwnerHomeScreen() {
 
   const restaurantUpdate = useRestaurantSocket(restaurant?.id ?? null);
 
-
-
-  const avatarSource = user?.avatarUrl || 'https://static.vecteezy.com/system/resources/thumbnails/048/216/761/small/modern-male-avatar-with-black-hair-and-hoodie-illustration-free-png.png';
+  const avatarSource =
+    user?.avatarUrl ||
+    'https://static.vecteezy.com/system/resources/thumbnails/048/216/761/small/modern-male-avatar-with-black-hair-and-hoodie-illustration-free-png.png';
 
   useEffect(() => {
     async function loadData() {
@@ -96,11 +96,20 @@ export default function OwnerHomeScreen() {
     await toggleOpen(restaurant.id, !restaurant.isOpen);
   };
 
-  const handleUpdateStatus = async ({ id, status }: { id: string; status: string }) => {
+  const handleUpdateStatus = async ({
+    id,
+    status,
+  }: {
+    id: string;
+    status: string;
+  }) => {
     try {
       await updateOrderStatus(id, status);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message || 'Could not update status');
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Could not update status',
+      );
     }
   };
 
@@ -120,28 +129,151 @@ export default function OwnerHomeScreen() {
     ['DELIVERED', 'CANCELLED'].includes(o.status),
   );
 
+  const handleRequestDriver = async (orderId: string) => {
+    try {
+      await useOrderStore.getState().requestDriver(orderId);
+      Alert.alert('Success', 'Driver requested successfully!');
+    } catch (e: any) {
+      Alert.alert(
+        'Error',
+        e?.response?.data?.message || 'Could not request driver',
+      );
+    }
+  };
+
+  const handleMessageUser = async (recipientId: string) => {
+    try {
+      const res = await api.post('/messages/conversations', {
+        type: 'DIRECT',
+        recipientId,
+      });
+      router.push(`/(owner)/(tabs)/message`);
+    } catch (e: any) {
+      Alert.alert('Error', 'Could not open conversation');
+    }
+  };
+
   function renderActionButton(order: Order) {
-    if (order.status === 'CONFIRMED') {
-      return (
-        <Pressable
-          className="mt-2 p-3 rounded-full items-center shadow-lg shadow-black/10 bg-[#F59E0B]"
-          onPress={() => handleUpdateStatus({ id: order.id, status: 'PREPARING' })}
-        >
-          <Text className="text-white font-bold text-sm font-rubik">Start Preparing</Text>
-        </Pressable>
-      );
-    }
-    if (order.status === 'PREPARING') {
-      return (
-        <Pressable
-          className="mt-2 p-3 rounded-full items-center shadow-lg shadow-black/10 bg-[#10B981]"
-          onPress={() => handleUpdateStatus({ id: order.id, status: 'READY' })}
-        >
-          <Text className="text-white font-bold text-sm font-rubik">Mark Ready</Text>
-        </Pressable>
-      );
-    }
-    return null;
+    return (
+      <View className="mt-2 space-y-3">
+        {order.status === 'CONFIRMED' && (
+          <Pressable
+            className="p-3 rounded-full items-center shadow-lg shadow-black/10 bg-[#F59E0B]"
+            onPress={() =>
+              handleUpdateStatus({ id: order.id, status: 'PREPARING' })
+            }
+          >
+            <Text className="text-white font-bold text-sm font-rubik">
+              Start Preparing
+            </Text>
+          </Pressable>
+        )}
+
+        {order.status === 'PREPARING' && (
+          <Pressable
+            className="p-3 rounded-full items-center shadow-lg shadow-black/10 bg-[#10B981]"
+            onPress={() =>
+              handleUpdateStatus({ id: order.id, status: 'READY' })
+            }
+          >
+            <Text className="text-white font-bold text-sm font-rubik">
+              Mark Ready
+            </Text>
+          </Pressable>
+        )}
+
+        {(order.status === 'PREPARING' || order.status === 'READY') &&
+          !order.driverId && (
+            <Pressable
+              className="p-3 rounded-full flex-row items-center justify-center shadow-lg shadow-black/10 bg-brand mt-2"
+              onPress={() => handleRequestDriver(order.id)}
+            >
+              <Ionicons
+                name="bicycle"
+                size={20}
+                color="white"
+                className="mr-2"
+              />
+              <Text className="text-white font-bold text-sm font-rubik ml-2">
+                🛵 Request Driver
+              </Text>
+            </Pressable>
+          )}
+      </View>
+    );
+  }
+
+  function renderCustomerAndDriver(order: Order) {
+    return (
+      <View className="bg-bg-input rounded-2xl p-4 mt-3 border border-border-input/40 gap-3">
+        {/* Customer Info */}
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center flex-1">
+            <View className="w-8 h-8 rounded-full bg-secondary/20 items-center justify-center mr-3">
+              <Text className="text-secondary font-bold">👤</Text>
+            </View>
+            <View className="flex-1">
+              <Text
+                className="text-sm font-bold text-text-main font-rubik"
+                numberOfLines={1}
+              >
+                {order.customer?.firstName} {order.customer?.lastName}
+              </Text>
+              <Text
+                className="text-xs text-text-muted font-rubik"
+                numberOfLines={1}
+              >
+                {order.deliveryAddress}
+              </Text>
+            </View>
+          </View>
+          <Pressable
+            className="p-2 bg-secondary/10 rounded-full"
+            onPress={() => handleMessageUser(order.customer!.id)}
+          >
+            <Ionicons name="chatbubble-ellipses" size={18} color="#06B6D4" />
+          </Pressable>
+        </View>
+
+        {/* Driver Info */}
+        {order.driver ? (
+          <View className="flex-row items-center justify-between border-t border-border-input/40 pt-3">
+            <View className="flex-row items-center flex-1">
+              <View className="w-8 h-8 rounded-full overflow-hidden mr-3">
+                <Image
+                  source={{
+                    uri:
+                      order.driver.avatarUrl ||
+                      'https://placehold.co/100x100.png',
+                  }}
+                  className="w-full h-full"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-bold text-text-main font-rubik">
+                  {order.driver.firstName} {order.driver.lastName}
+                </Text>
+                <Text className="text-xs text-brand font-bold font-rubik">
+                  Assigned Driver
+                </Text>
+              </View>
+            </View>
+            <Pressable
+              className="p-2 bg-brand/10 rounded-full"
+              onPress={() => handleMessageUser(order.driver!.id)}
+            >
+              <Ionicons name="chatbubble-ellipses" size={18} color="#FF6B35" />
+            </Pressable>
+          </View>
+        ) : order.status === 'PREPARING' || order.status === 'READY' ? (
+          <View className="border-t border-border-input/40 pt-3">
+            <Text className="text-xs text-text-muted font-rubik italic">
+              No driver assigned yet.
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    );
   }
 
   return (
@@ -162,7 +294,10 @@ export default function OwnerHomeScreen() {
 
         {/*  notification icon---- */}
         <View className="flex-row items-center space-x-4">
-          <Pressable onPress={() => router.push('/(owner)/(tabs)/analytics')} className="relative">
+          <Pressable
+            onPress={() => router.push('/(owner)/(tabs)/analytics')}
+            className="relative"
+          >
             <Ionicons name="notifications-outline" size={22} color="#a18882" />
             <View className="absolute -top-1 -right-1 bg-danger w-5 h-5 rounded-full flex-row items-center justify-center">
               <Text className="text-[10px] font-bold text-white">1</Text>
@@ -194,19 +329,29 @@ export default function OwnerHomeScreen() {
               {/* Immersive Banner Image */}
               <View className="relative w-full h-48">
                 {restaurant?.imageUrl ? (
-                  <Image source={{ uri: restaurant.imageUrl }} className="w-full h-full" resizeMode="cover" />
+                  <Image
+                    source={{ uri: restaurant.imageUrl }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
                 ) : (
                   <View className="w-full h-full bg-bg-input items-center justify-center">
-                    <Ionicons name="restaurant-outline" size={40} color="#a18882" />
+                    <Ionicons
+                      name="restaurant-outline"
+                      size={40}
+                      color="#a18882"
+                    />
                   </View>
                 )}
                 {/* Subtle gradient overlay to make buttons pop */}
                 <View className="absolute inset-0 bg-black/20" />
-                
+
                 {/* Floating Status Badge directly on the image */}
                 <Pressable
                   className={`absolute top-4 right-4 px-5 py-2.5 rounded-full items-center shadow-lg active:scale-95 transition-transform ${
-                    restaurant?.isOpen ? 'bg-success shadow-green-500/30' : 'bg-error shadow-red-500/30'
+                    restaurant?.isOpen
+                      ? 'bg-success shadow-green-500/30'
+                      : 'bg-error shadow-red-500/30'
                   }`}
                   onPress={handleToggleOpen}
                 >
@@ -230,7 +375,9 @@ export default function OwnerHomeScreen() {
                   <View className="bg-brand/10 px-3 py-2 rounded-xl flex-row items-center">
                     <Ionicons name="star" size={14} color="#FF6B35" />
                     <Text className="text-sm font-bold text-brand font-rubik ml-1">
-                      {Number(restaurant?.rating) > 0 ? Number(restaurant?.rating).toFixed(1) : 'New'}
+                      {Number(restaurant?.rating) > 0
+                        ? Number(restaurant?.rating).toFixed(1)
+                        : 'New'}
                     </Text>
                   </View>
                 </View>
@@ -243,10 +390,19 @@ export default function OwnerHomeScreen() {
 
                 <Pressable
                   className="w-full py-3.5 mt-1 rounded-2xl items-center border border-brand/30 bg-brand/5 active:scale-95 transition-transform"
-                  onPress={() => router.push('/(owner)/(tabs)/(index)/edit-restaurant' as any)}
+                  onPress={() =>
+                    router.push(
+                      '/(owner)/(tabs)/(index)/edit-restaurant' as any,
+                    )
+                  }
                 >
                   <View className="flex-row items-center">
-                    <Ionicons name="create-outline" size={18} color="#FF6B35" className="mr-2" />
+                    <Ionicons
+                      name="create-outline"
+                      size={18}
+                      color="#FF6B35"
+                      className="mr-2"
+                    />
                     <Text className="text-label-md font-bold text-brand font-rubik ml-1">
                       Edit Restaurant Profile
                     </Text>
@@ -265,22 +421,31 @@ export default function OwnerHomeScreen() {
         }
         ListEmptyComponent={
           <View className="items-center justify-center pt-8">
-            <Text className="text-body-md text-text-muted font-rubik">No active orders</Text>
+            <Text className="text-body-md text-text-muted font-rubik">
+              No active orders
+            </Text>
           </View>
         }
         ListFooterComponent={
           pastOrders.length > 0 ? (
             <View className="mt-8">
-              <Text className="text-headline-sm font-bold mb-4 text-text-main font-rubik">Past Orders</Text>
+              <Text className="text-headline-sm font-bold mb-4 text-text-main font-rubik">
+                Past Orders
+              </Text>
               {pastOrders.slice(0, 5).map((order) => (
-                <View key={order.id} className="rounded-[32px] border border-border-input/40 bg-white p-5 mb-5 shadow-sm gap-2">
+                <View
+                  key={order.id}
+                  className="rounded-[32px] border border-border-input/40 bg-white p-5 mb-5 shadow-sm gap-2"
+                >
                   <View className="flex-row justify-between items-center">
                     <Text className="text-title-md font-bold text-text-main font-rubik">
                       #{order.id.slice(0, 8).toUpperCase()}
                     </Text>
                     <View
                       className="px-3 py-1.5 rounded-full"
-                      style={{ backgroundColor: STATUS_COLORS[order.status] + '20' }}
+                      style={{
+                        backgroundColor: STATUS_COLORS[order.status] + '20',
+                      }}
                     >
                       <Text
                         className="text-xs font-bold font-rubik uppercase tracking-wider"
@@ -290,8 +455,13 @@ export default function OwnerHomeScreen() {
                       </Text>
                     </View>
                   </View>
-                  <Text className="text-title-lg font-bold text-brand font-rubik">${order.totalAmount}</Text>
-                  <Text className="text-body-sm text-text-muted font-rubik" numberOfLines={1}>
+                  <Text className="text-title-lg font-bold text-brand font-rubik">
+                    ${order.totalAmount}
+                  </Text>
+                  <Text
+                    className="text-body-sm text-text-muted font-rubik"
+                    numberOfLines={1}
+                  >
                     {order.deliveryAddress}
                   </Text>
                 </View>
@@ -317,8 +487,13 @@ export default function OwnerHomeScreen() {
                 </Text>
               </View>
             </View>
-            <Text className="text-title-lg font-bold text-brand font-rubik">${order.totalAmount}</Text>
-            <Text className="text-body-sm text-text-muted font-rubik" numberOfLines={1}>
+            <Text className="text-title-lg font-bold text-brand font-rubik">
+              ${order.totalAmount}
+            </Text>
+            <Text
+              className="text-body-sm text-text-muted font-rubik"
+              numberOfLines={1}
+            >
               {order.deliveryAddress}
             </Text>
             {renderActionButton(order)}

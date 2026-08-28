@@ -98,9 +98,37 @@ export interface Order {
   status: OrderStatus;
   totalAmount: string;
   deliveryAddress: string;
+  phoneNumber?: string | null;
   stripePaymentIntentId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  
+  // Enriched relations
+  restaurant?: RestaurantType & {
+    owner?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl: string | null;
+      phoneNumber: string | null;
+    }
+  };
+  driver?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+    phoneNumber: string | null;
+    isOnline: boolean;
+  } | null;
+  customer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+    phoneNumber: string | null;
+  };
+  items?: OrderItem[] | any[];
 }
 
 export interface OrderItem {

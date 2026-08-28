@@ -87,6 +87,7 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitOrderUpdate(order: {
     id: string;
     restaurantId: string;
+    driverId?: string | null;
     status: string;
     [key: string]: unknown;
   }) {
@@ -96,5 +97,11 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server
       ?.to(`restaurant:${order.restaurantId}`)
       .emit('order:updated', order);
+      
+    if (order.driverId) {
+      this.server
+        ?.to(`driver:${order.driverId}`)
+        .emit('order:updated', order);
+    }
   }
 }

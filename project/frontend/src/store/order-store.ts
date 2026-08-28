@@ -20,6 +20,7 @@ interface OrderState {
   createOrder: (payload: any) => Promise<Order>;
   updateOrderStatus: (id: string, status: string) => Promise<Order>;
   acceptOrder: (id: string) => Promise<Order>;
+  requestDriver: (id: string) => Promise<Order>;
 }
 
 export const useOrderStore = create<OrderState>((set) => ({
@@ -60,7 +61,7 @@ export const useOrderStore = create<OrderState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await api.get<Order[]>('/orders/mine');
-      const active = res.data.filter((o) => o.status === 'PICKED_UP');
+      const active = res.data.filter((o) => o.status === 'PICKED_UP' || o.status === 'READY');
       set({ driverActiveOrders: active, isLoading: false });
       return active;
     } catch (err: any) {
@@ -128,7 +129,7 @@ export const useOrderStore = create<OrderState>((set) => ({
   acceptOrder: async (id) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await api.post<Order>(`/orders/${id}/accept`);
+      const res = await api.post<Order>(`/driver/orders/${id}/accept`);
       set((state) => ({
         driverActiveOrders: [res.data, ...state.driverActiveOrders],
         isMutating: false,
@@ -136,6 +137,22 @@ export const useOrderStore = create<OrderState>((set) => ({
       return res.data;
     } catch (err: any) {
       set({ error: err?.message || 'Failed to accept order', isMutating: false });
+      throw err;
+    }
+  },
+
+  requestDriver: async (id) => {
+    set({ isMutating: true, error: null });
+    try {
+      const res = await api.post<Order>(`/orders/${id}/request-driver`);
+      set((state) => ({
+        currentOrder: state.currentOrder?.id === id ? res.data : state.currentOrder,
+        ownerOrders: state.ownerOrders.map((o) => (o.id === id ? res.data : o)),
+        isMutating: false,
+      }));
+      return res.data;
+    } catch (err: any) {
+      set({ error: err?.message || 'Failed to request driver', isMutating: false });
       throw err;
     }
   },
